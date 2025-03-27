@@ -27,7 +27,7 @@ jobs:
       uses: actions/checkout@v4
     
     - name: 部署 markdown.html
-      uses: PJ-568/MARKDOWN.HTML@v1.10.0
+      uses: PJ-568/MARKDOWN.HTML@v1.10.1
       with:
         target-dir: '.'
 

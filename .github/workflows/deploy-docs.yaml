@@ -28,7 +28,7 @@ jobs:
     - name: 部署 markdown.html
       uses: PJ-568/MARKDOWN.HTML@v1.9.1
       with:
-        target-dir: 'docs'
+        target-dir: '.'
 
     - name: 配置 Pages
       uses: actions/configure-pages@v4
@@ -36,8 +36,7 @@ jobs:
     - name: 上传 Pages Artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: 'docs'
+        path: '.'
 
     - name: 部署到 GitHub Pages
-      id: deploy-docs
       uses: actions/deploy-pages@v4

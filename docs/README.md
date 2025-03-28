@@ -28,7 +28,9 @@ flowchart TD
     end
 
     subgraph BACKEND[后端]
-        SESSION --> |创建智能体实例| TASK{分析并确定任务目标}
+        SESSION --> |会话历史、用户指示和密钥| AUTH{密钥是否合规？}
+        AUTH --> |是，创建智能体实例| TASK{分析并确定任务目标}
+        AUTH --> |否，返回错误| SESSION
         AUTO_RETRY --> |否| BREAKER
         BREAKER --> |会话历史和中断类型| SESSION
         AGENT --> |实时同步状态（流式传输）| SESSION

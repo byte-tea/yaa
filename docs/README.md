@@ -21,19 +21,19 @@ yaa 智能体是前后端分离的，前端使用 HTML + CSS + JS，后端使用
 flowchart TD
     subgraph FRONTEND[前端]
         HIST[会话历史和状态] --> |读取| FE[用户界面]
-        FE --> |创建任务| SESSION[会话交互管理器]
-        SESSION --> |保存| HIST[会话历史和状态]
+        FE --> |创建任务| SESSIONER[会话交互管理器]
+        SESSIONER --> |保存| HIST[会话历史和状态]
         FE --> |配置| CFG[配置管理]
         FE --> |定义| PROMPT[提示词库]
     end
 
     subgraph BACKEND[后端]
-        SESSION --> |会话历史、用户指示和密钥| AUTH{密钥是否合规？}
+        SESSIONER --> |会话历史、用户指示和密钥| AUTH{密钥是否合规？}
         AUTH --> |是，创建智能体实例| TASK{分析并确定任务目标}
-        AUTH --> |否，返回错误| SESSION
+        AUTH --> |否，返回错误| SESSIONER
         AUTO_RETRY --> |否| BREAKER
-        BREAKER --> |会话历史和中断类型| SESSION
-        AGENT --> |实时同步状态（流式传输）| SESSION
+        BREAKER --> |会话历史和中断类型| SESSIONER
+        AGENT --> |实时同步状态（流式传输）| SESSIONER
 
         subgraph AGENT[智能体]
             TASK --> PROMPT_GEN[提示词生成组合器]

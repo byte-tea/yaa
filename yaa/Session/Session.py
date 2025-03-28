@@ -20,7 +20,7 @@
 #     {"role": "user", "content": "输入"},
 #     {"role": "agent", "content": "响应"}
 #   ],
-#   "status": "running/completed/failed"
+#   "status": "queuing/running/completed/failed"
 # }
 #
 # 关键方法：
@@ -30,6 +30,6 @@
 # - close_session(): 关闭会话
 #
 # 与其他模块关系：
-# - 被yaa.py主程序调用来管理会话
-# - 与BaseAgent交互传递会话上下文
-# - 使用DefaultConfig的会话配置
+# - 被 yaa.py 主程序调用来管理会话
+# - 与 BaseAgent 交互传递会话上下文
+# - 使用 DefaultConfig 的会话配置

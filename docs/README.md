@@ -112,13 +112,32 @@ flowchart TD
         }
     ],
     "config": {
-        "model": "string",
-        "api_url": "string",
-        "api_key": "string",
-        "cost_per_ktoken": "float",
-        "cost_unit": "string",
-        "temperature": "float",
-        "max_tokens": "int",
+        "yaa" : {"stream": "bool"},
+        "llm_api": {
+            "provider": {
+                "api_url": "string",
+                "api_key": "string",
+                "model_name": "string",
+                "model_type": {
+                    "is_function_call": "bool",
+                    "is_reasoning": "bool"
+                },
+                "cost_per_ktoken": "float",
+                "cost_unit": "string",
+                "max_tokens": "int",
+                "model_settings": {
+                    "use_costum_temp": "bool",
+                    "temperature": "float"
+                },
+            },
+            "stream": "bool",
+            "request_timeout": "int",
+            "interval": "int",
+            "retry": {
+                "times": "int",
+                "delay": "int"
+            }
+        },
         "prompt": {
             "function": "string",
             "another_function": "string"

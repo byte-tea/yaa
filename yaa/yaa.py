@@ -15,5 +15,5 @@
 # 与其他模块关系：
 # - 依赖 Session.py 管理会话状态
 # - 调用 BaseAgent.py 创建智能体实例
-# - 使用 API.py 提供对外接口
+# - 使用 LLM_API.py 提供对外接口
 # - 通过 Config/DefaultConfig.py 获取默认配置

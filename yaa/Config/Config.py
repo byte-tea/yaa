@@ -1,10 +1,11 @@
-# 默认配置模块
-#
-# 职责：
-# 1. 提供系统默认配置项
-# 2. 管理配置加载优先级（默认配置 < 用户配置 < 运行时配置）
+"""智能体默认配置模块
 
-class DefaultConfig:
+职责：
+1. 提供系统默认配置项
+2. 管理配置加载优先级（默认配置 < 用户配置 < 运行时配置）
+"""
+
+class Config:
     """系统默认配置类"""
     
     # 基础配置
@@ -54,14 +55,6 @@ class DefaultConfig:
         'cpu_threshold': 0.8,
         'interrupt_monitor': True
     }
-
-    # TODO 安全验证配置
-    # SECURITY_CONFIG = {
-    #     'auth_required': True,
-    #     'api_key_header': 'X-API-KEY',
-    #     'rate_limit': '100/1m',
-    #     'max_request_size': '10MB'
-    # }
 
     @classmethod
     def merge_config(cls, user_config=None):

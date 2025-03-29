@@ -11,7 +11,7 @@ import json
 import time
 import requests
 from typing import Dict, Optional, Generator
-from ..Config.DefaultConfig import DefaultConfig
+from ..Config.Config import Config
 
 class LLMAPI:
     """大语言模型API封装类"""
@@ -22,7 +22,7 @@ class LLMAPI:
         参数:
             config: 用户提供的配置字典，会与默认配置合并
         """
-        self.config = DefaultConfig.merge_config(config)['llm_api']
+        self.config = Config.merge_config(config)['llm_api']
         self.session = requests.Session()
         
     def _make_request_headers(self) -> Dict[str, str]:

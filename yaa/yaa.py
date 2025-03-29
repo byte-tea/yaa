@@ -25,8 +25,9 @@ def main():
     args = parser.parse_args()
 
     if args.run:
-        # TODO
-        print(f"输入的提示词: {args.run}")
+        # TODO 命令行交互式应用模式运行此提示词
+        # print(f"输入的提示词: {args.run}")
+        pass
     elif args.serve:
         try:
             # 构建运行时配置
@@ -48,8 +49,9 @@ def main():
         except Exception as e:
             print(f"服务启动失败: {str(e)}")
     else:
-        # TODO
-        print("命令行应用模式")
+        # TODO 命令行交互式应用模式
+        # print("命令行应用模式")
+        pass
 
 if __name__ == "__main__":
     main()

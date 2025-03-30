@@ -12,7 +12,7 @@ class ServerConfig:
         'ip': '0.0.0.0',
         'port': 12345,
         'max_connections': 100,
-        "max_receive": 1024,
+        'max_receive': 1024,
         'timeout': 60
     }
 
@@ -22,7 +22,7 @@ class ServerConfig:
         'api_key_header': 'YAA-API-KEY',
         'api_key': [
             {
-                'key': '636ebda2dccc312b88aed7c54786f8678d33d4f878da41c5302b3dcde563055b61e8ca047d333c45e9be1adc342ceb2850f23f294a8b1b1c2d2dd016713fef58', # 测试用密钥（BLAKE2）：yaa
+                'key': '636ebda2dccc312b88aed7c54786f8678d33d4f878da41c5302b3dcde563055b61e8ca047d333c45e9be1adc342ceb2850f23f294a8b1b1c2d2dd016713fef58' # 测试用密钥（BLAKE2）：yaa
             }
         ],
         'rate_limit': '100/1m',

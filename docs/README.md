@@ -34,7 +34,7 @@ sequenceDiagram
 <!-- #### 服务端代码结构
 
 ```mermaid
-%% yaa 后端代码结构图
+%% yaa 服务端代码结构图
 classDiagram
     class BaseAgent {
         
@@ -43,14 +43,14 @@ classDiagram
 
 ### 整体架构图
 
-用户在前端输入指示或对会话数据进行修改后，前端将当前会话数据通过 API 发送至后端；
-后端在验证密钥通过后，将会话数据中缺省的配置和缺省的预设提示词补全后传入新建的智能体实例；
-智能体实例根据指示或对会话数据进行修改后，将修改后的会话数据返回给前端；
+用户在客户端输入指示或对会话数据进行修改后，客户端将当前会话数据通过 API 发送至服务端；
+服务端在验证密钥通过后，将会话数据中缺省的配置和缺省的预设提示词补全后传入新建的智能体实例；
+智能体实例根据指示或对会话数据进行修改后，将修改后的会话数据返回给客户端；
 
 ```mermaid
 %% yaa 智能体框架架构图
 flowchart TD
-    subgraph Client[前端]
+    subgraph Client[客户端]
         HIST[会话数据历史和状态] --> |读取| FE[用户界面]
         FE --> |创建任务| SESSIONER[会话数据交互管理器]
         SESSIONER --> |保存| HIST[会话数据历史和状态]
@@ -58,7 +58,7 @@ flowchart TD
         FE --> |定义| PROMPT[提示词库]
     end
 
-    subgraph Server[后端]
+    subgraph Server[服务端]
         SESSIONER --> |会话数据历史、用户指示和密钥| AUTH{密钥是否合规？}
         AUTH --> |是，创建智能体实例| TASK{分析并确定任务目标}
         AUTH --> |否，返回错误| SESSIONER

@@ -49,11 +49,13 @@ class Config:
     
     # TODO 工具调用配置
     TOOL_CONFIG = {
-        'auto_approve': False,
-        'timeout': 30,
-        'max_memory': '512MB',
-        'cpu_threshold': 0.8,
-        'interrupt_monitor': True
+        'base_tool': {
+            'auto_approve': False,
+            'timeout': 30,
+            'max_memory': '512MB',
+            'cpu_threshold': 0.8,
+            'interrupt_monitor': True
+        }
     }
 
     @classmethod

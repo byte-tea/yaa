@@ -2,7 +2,7 @@
 
 职责：
 1. 提供系统默认配置项
-2. 管理配置加载优先级（默认配置 < 用户配置 < 运行时配置）
+2. 管理配置加载优先级（默认配置 < 运行时配置 < 用户配置）
 """
 
 class Config:
@@ -57,29 +57,82 @@ class Config:
     }
 
     @classmethod
-    def merge_config(cls, user_config=None):
+    def get_default_config(cls):
+        """获取默认配置"""
+        return {
+            'yaa': cls.YAA_CONFIG,
+            'llm_api': cls.LLM_API_CONFIG,
+            'prompt': cls.PROMPT_CONFIG,
+            'tool': cls.TOOL_CONFIG
+        }
+
+    @classmethod
+    def merge_config(cls, session_data=None):
         """合并用户配置和默认配置
         
         参数:
-            user_config (dict): 用户提供的配置字典
+            session_data (dict): 用户提供的会话数据，其中 session_data['config'] 为配置字典
             
         返回:
-            dict: 合并后的配置字典，保留所有原始字段并合并特定配置项
+            session_data (dict): 补充完缺少的配置项的会话数据字典
         """
-        if user_config is None:
-            user_config = {}
-            
-        # 保留所有原始字段
-        merged_config = user_config.copy()
+        if session_data is None:
+            raise ValueError('未提供会话数据')
+
+        # 从 session_data 中取出用户配置
+        user_config = session_data.get('config', {})
         
-        # 合并特定配置项
-        if 'yaa' in user_config:
-            merged_config['yaa'] = {**cls.YAA_CONFIG, **user_config['yaa']}
-        if 'llm_api' in user_config:
-            merged_config['llm_api'] = {**cls.LLM_API_CONFIG, **user_config['llm_api']}
-        if 'prompt' in user_config:
-            merged_config['prompt'] = {**cls.PROMPT_CONFIG, **user_config['prompt']}
-        if 'tool' in user_config:
-            merged_config['tool'] = {**cls.TOOL_CONFIG, **user_config['tool']}
+        session_data['config'] = cls._deep_merge(cls.get_default_config(), user_config)
+
+        return session_data
+    
+    @classmethod
+    def update_config(cls, runtime_config_path=None):
+        """更新默认配置（运行时配置优先）
+        
+        参数:
+            runtime_config_path (src): 运行时提供的会话数据 json 的路径
+        """
+        if runtime_config_path is None:
+            raise ValueError('未提供运行时配置路径')
+
+        import json
+
+        runtime_config = json.load(open(runtime_config_path, 'r'))
+
+        if runtime_config['config'] is None:
+            raise ValueError('未提供运行时配置')
+        
+        merged_config = cls._deep_merge(cls.get_default_config(), runtime_config['config'])
+
+        # 更新 YAA 配置
+        cls.YAA_CONFIG = {**cls.YAA_CONFIG, **merged_config['yaa']}
+        
+        # 更新 LLM API 配置
+        cls.LLM_API_CONFIG = {**cls.LLM_API_CONFIG, **merged_config['llm_api']}
+        
+        # 更新提示词配置
+        cls.PROMPT_CONFIG = {**cls.PROMPT_CONFIG, **merged_config['prompt']}
+        
+        # 更新工具调用配置
+        cls.TOOL_CONFIG = {**cls.TOOL_CONFIG, **merged_config['tool']}
+
+    @classmethod
+    def _deep_merge(cls, default_dict, target_dict):
+            """深度合并两个字典，用户字典优先
             
-        return merged_config
+            参数:
+                default_dict (dict): 默认配置字典
+                target_dict (dict): 目标配置字典
+                
+            返回:
+                dict: 合并后的字典
+            """
+            merged = default_dict.copy()
+            for key, value in target_dict.items():
+                if (key in merged and isinstance(merged[key], dict)
+                    and isinstance(value, dict)):
+                    merged[key] = cls._deep_merge(merged[key], value)
+                else:
+                    merged[key] = value
+            return merged

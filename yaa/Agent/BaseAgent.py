@@ -1,3 +1,4 @@
+from ..Config.Config import Config
 # from ..LLM_API.BaseAPI import BaseAPI
 from ..LLM_API.OpenAI import OpenAI_API
 
@@ -13,9 +14,12 @@ class BaseAgent:
             response_data (dict): 加入智能体信息的会话数据
         """
         try:
+            # 补全会话配置
+            merged_data = Config.merge_config(session_data)
+
             # 调用大模型API
             # response_data = BaseAPI.request(session_data)
-            response_data = OpenAI_API.request(session_data)
+            response_data = OpenAI_API.request(merged_data)
             
             return response_data
             

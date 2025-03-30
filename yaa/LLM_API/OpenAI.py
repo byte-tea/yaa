@@ -9,7 +9,7 @@ class OpenAI_API:
         api_url = provider_config['api_url']
         api_key = provider_config['api_key']
         model_name = provider_config['model_name']
-        
+
         # 解析API URL
         parsed_url = urlparse(api_url)
         host = parsed_url.netloc

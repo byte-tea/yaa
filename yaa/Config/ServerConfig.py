@@ -30,6 +30,34 @@ class ServerConfig:
     }
 
     @classmethod
+    def get_default_config(cls):
+        """获取默认配置"""
+        return {
+            'yaa_server': cls.YAA_SERVER_CONFIG,
+            'security': cls.SECURITY_CONFIG
+        }
+    
+    @classmethod
+    def _deep_merge(cls, default_dict, target_dict):
+            """深度合并两个字典，用户字典优先
+            
+            参数:
+                default_dict (dict): 默认配置字典
+                target_dict (dict): 目标配置字典
+                
+            返回:
+                dict: 合并后的字典
+            """
+            merged = default_dict.copy()
+            for key, value in target_dict.items():
+                if (key in merged and isinstance(merged[key], dict)
+                    and isinstance(value, dict)):
+                    merged[key] = cls._deep_merge(merged[key], value)
+                else:
+                    merged[key] = value
+            return merged
+
+    @classmethod
     def merge_config(cls, args_config=None):
         """合并用户配置和默认配置
         
@@ -42,9 +70,6 @@ class ServerConfig:
         if args_config is None:
             args_config = {}
             
-        merged_config = {
-            'yaa_server': {**cls.YAA_SERVER_CONFIG, **args_config.get('yaa_server', {})},
-            'security': {**cls.SECURITY_CONFIG, **args_config.get('security', {})}
-        }
+        merged_config = cls._deep_merge(cls.get_default_config(), args_config)
         
         return merged_config

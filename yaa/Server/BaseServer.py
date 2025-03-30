@@ -8,7 +8,6 @@
 
 import socket
 import json
-from ..Config.Config import Config
 from ..Agent.BaseAgent import BaseAgent
 
 class BaseServer:
@@ -53,12 +52,9 @@ class BaseServer:
                 
                 # 解析会话数据
                 session_data = json.loads(body)
-                
-                # 补全会话配置
-                merged_data = Config.merge_config(session_data)
-                
+
                 # 交给智能体处理
-                response_data = BaseAgent.Agent(merged_data)
+                response_data = BaseAgent.Agent(session_data)
                 
                 # 返回响应
                 conn.sendall(b'HTTP/1.1 200 OK\n')

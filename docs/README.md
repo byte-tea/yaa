@@ -31,15 +31,54 @@ sequenceDiagram
     中断监控器 ->> 日志记录: 记录执行状态
 ```
 
-<!-- #### 服务端代码结构
+#### 服务端代码结构
 
 ```mermaid
 %% yaa 服务端代码结构图
 classDiagram
-    class BaseAgent {
+    class BaseServer {
+        +host: str
+        +port: int
+        +max_connections: int
+        +api_keys: list[str]
+        +socket: socket.socket
         
+        +__init__(config: dict)
+        +listen()
+        +_parse_request(data: str) -> tuple[dict, str]
+        +_validate_auth(auth_header: str) -> bool
     }
-``` -->
+    
+    class BaseAgent {
+        +Agent(session_data: dict) -> dict
+    }
+    
+    class BaseAPI {
+        +request(session_data: dict) -> dict
+    }
+    
+    class OpenAI_API {
+        +request(session_data: dict) -> dict
+    }
+    
+    class BaseTool {
+        +input_schema: dict
+        +required_resources: dict
+        
+        +execute(params: dict) -> dict
+    }
+    
+    BaseServer --> BaseAgent : 调用
+    BaseAgent --> BaseAPI : 使用
+    BaseAgent --> BaseTool : 调用
+    BaseAPI <|-- OpenAI_API : 继承
+    
+    note for BaseServer "处理TCP连接和HTTP请求"
+    note for BaseAgent "核心业务逻辑处理"
+    note for BaseAPI "大语言模型API抽象接口"
+    note for OpenAI_API "OpenAI API具体实现"
+    note for BaseTool "工具调用基础框架\n- 参数验证\n- 资源限制\n- 结果标准化"
+```
 
 ### 整体架构图
 

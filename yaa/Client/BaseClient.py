@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from ..Agent.BaseAgent import BaseAgent
-from ..Config.Config import Config
 
 class BaseClient:
     def run(message=None):
@@ -13,13 +12,7 @@ class BaseClient:
             'title': '会话',
             'start_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "type": "对话",
-            'messages': [],
-            'config': {
-                'yaa': Config.YAA_CONFIG,
-                'llm_api': Config.LLM_API_CONFIG,
-                'prompt': Config.PROMPT_CONFIG,
-                'tool': Config.TOOL_CONFIG
-            }
+            'messages': []
         }
 
         while True:
@@ -41,7 +34,7 @@ class BaseClient:
             })
 
             message = None
-            
+
             # 交给智能体处理
             agent_response = BaseAgent.Agent(session_data)
 

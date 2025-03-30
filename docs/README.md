@@ -158,7 +158,10 @@ flowchart TD
         }
     ],
     "config": {
-        "yaa" : {"stream": "bool"},
+        "yaa" : {
+            "stream": "bool",
+            "language": "string"
+        },
         "llm_api": {
             "provider": {
                 "api_url": "string",

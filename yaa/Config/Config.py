@@ -10,7 +10,8 @@ class Config:
     
     # 基础配置
     YAA_CONFIG = {
-        'stream': True
+        'stream': True,
+        'language': 'zh_CN'
     }
 
     # LLM API 配置

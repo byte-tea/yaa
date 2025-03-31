@@ -2,7 +2,7 @@ import http.client
 import json
 from urllib.parse import urlparse
 
-from ..LLM_API import BaseAPI
+from yaa.LLM_API import BaseAPI
 
 class OpenAI_API(BaseAPI):
     def request(session_data):

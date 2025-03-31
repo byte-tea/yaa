@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from ..Agent.BaseAgent import BaseAgent
+from yaa.Agent.BaseAgent import BaseAgent
 
 class BaseClient:
     def run(message=None):

@@ -22,13 +22,13 @@ cd yaa
 运行 `yaa` 服务：
 
 ```bash
-python -m yaa/yaa --serve
+python -m yaa.yaa --serve
 ```
 
 命令行交互模式：
 
 ```bash
-python -m yaa/yaa
+python -m yaa.yaa
 ```
 
 ## 项目实现

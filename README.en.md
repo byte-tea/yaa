@@ -22,13 +22,13 @@ cd yaa
 Run `yaa` service:
 
 ```bash
-python -m yaa/yaa --serve
+python -m yaa.yaa --serve
 ```
 
 Command line interactive mode:
 
 ```bash
-python -m yaa/yaa
+python -m yaa.yaa
 ```
 
 ## Project Implementation

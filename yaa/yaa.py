@@ -8,10 +8,10 @@
 
 import sys
 import argparse
-from .Client.BaseClient import BaseClient
-from .Config.Config import Config
-from .Config.ServerConfig import ServerConfig
-from .Server.BaseServer import BaseServer
+from yaa.Client.BaseClient import BaseClient
+from yaa.Config.Config import Config
+from yaa.Config.ServerConfig import ServerConfig
+from yaa.Server.BaseServer import BaseServer
 
 sys.path.append('..')
 def main():

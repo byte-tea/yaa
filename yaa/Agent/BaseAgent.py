@@ -1,7 +1,7 @@
-from ..Config.Config import Config
-# from ..LLM_API.BaseAPI import BaseAPI
-from ..LLM_API.OpenAI import OpenAI_API
-from ..Prompts.BasePromptGenerater import BasePromptGenerater
+from yaa.Config.Config import Config
+# from yaa.LLM_API.BaseAPI import BaseAPI
+from yaa.LLM_API.OpenAI import OpenAI_API
+from yaa.Prompts.BasePromptGenerater import BasePromptGenerater
 
 class BaseAgent:
     """智能体基类"""

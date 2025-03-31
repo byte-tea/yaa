@@ -8,7 +8,7 @@
 
 import socket
 import json
-from ..Agent.BaseAgent import BaseAgent
+from yaa.Agent.BaseAgent import BaseAgent
 
 class BaseServer:
     def __init__(self, config=None):

@@ -1,5 +1,4 @@
-from ..Tools.BaseTool import BaseTool
-
+from yaa.Tools.BaseTool import BaseTool
 
 __all__ = [
     "BaseTool"

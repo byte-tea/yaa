@@ -12,17 +12,53 @@
 
 ## Quick Start
 
+### Deployment
+
 Deploy locally:
 
 ```bash
+# Clone project repository to local
 git clone https://github.com/Byte-tea/yaa.git
+# Enter project directory
 cd yaa
 ```
 
-Usage:
+Configuration:
 
 ```bash
-# python -m yaa.yaa --help
+# Create client config file (will override default config)
+cp configs/Config.example.json Config.json
+# Create server config file (will override default config)
+cp configs/ServerConfig.example.json ServerConfig.json
+```
+
+### Usage
+
+Start in server mode:
+
+```bash
+python -m yaa.yaa --serve --config Config.json --server-config ServerConfig.json
+```
+
+Start in interactive CLI mode:
+
+```bash
+python -m yaa.yaa --config Config.json
+> Please write a bubble sort algorithm in Python.
+* Working on it...
+```
+
+Run single command:
+
+```bash
+python -m yaa.yaa --run 'Please write a bubble sort algorithm in Python.' --config Config.json
+* Working on it...
+```
+
+More usage:
+
+```bash
+# Run: python -m yaa.yaa --help
 usage: yaa.py [-h] [--run [RUN] | --serve]
               [--config CONFIG]
               [--port PORT]
@@ -30,12 +66,11 @@ usage: yaa.py [-h] [--run [RUN] | --serve]
 yaa agent command line interface
 
 options:
-  -h, --help       show this help message
-                   and exit
-  --run [RUN]      send command to agent
-  --serve          server mode
-  --config CONFIG  config file
-  --port PORT      server port default 12345
+  -h, --help        show this help message and exit
+  --run [RUN]       send command to agent
+  --serve           server mode
+  --config CONFIG   config file path
+  --port PORT       server port number, default 12345
 ```
 
 ## Project Implementation

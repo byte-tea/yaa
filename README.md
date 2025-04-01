@@ -12,17 +12,53 @@
 
 ## 快速上手
 
-部署到本地：
+### 部署
+
+拉取到本地：
 
 ```bash
+# 拉取项目仓库到本地
 git clone https://github.com/Byte-tea/yaa.git
+# 进入项目目录
 cd yaa
 ```
 
-使用方法：
+配置：
 
 ```bash
-# python -m yaa.yaa --help
+# 创建客户端相关配置文件，传入时会覆盖默认配置
+cp configs/Config.example.json Config.json
+# 创建服务端相关配置文件，传入时会覆盖默认配置
+cp configs/ServerConfig.example.json ServerConfig.json
+```
+
+### 使用
+
+以服务模式启动：
+
+```bash
+python -m yaa.yaa --serve --config Config.json --server-config ServerConfig.json
+```
+
+以命令行交互模式启动：
+
+```bash
+python -m yaa.yaa --config Config.json
+> 请用 Python 写一个冒泡排序算法。
+* 好的……
+```
+
+单行命令交互：
+
+```bash
+python -m yaa.yaa --run '请用 Python 写一个冒泡排序算法。' --config Config.json
+* 好的……
+```
+
+更多使用方法：
+
+```bash
+# 执行：python -m yaa.yaa --help
 usage: yaa.py [-h] [--run [RUN] | --serve]
               [--config CONFIG]
               [--port PORT]

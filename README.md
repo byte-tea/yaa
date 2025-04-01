@@ -19,16 +19,22 @@ git clone https://github.com/Byte-tea/yaa.git
 cd yaa
 ```
 
-运行 `yaa` 服务：
+使用方法：
 
 ```bash
-python -m yaa.yaa --serve
-```
+# python -m yaa.yaa --help
+usage: yaa.py [-h] [--run [RUN] | --serve]
+              [--config CONFIG]
+              [--port PORT]
 
-命令行交互模式：
+yaa 智能体命令行工具
 
-```bash
-python -m yaa.yaa
+options:
+  -h, --help       显示帮助信息
+  --run [RUN]      传入命令到智能体
+  --serve          启动服务模式
+  --config CONFIG  配置文件路径
+  --port PORT      服务端口号，默认 12345
 ```
 
 ## 项目实现

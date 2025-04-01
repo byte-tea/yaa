@@ -19,16 +19,26 @@ git clone https://github.com/Byte-tea/yaa.git
 cd yaa
 ```
 
-Run `yaa` service:
+Usage:
 
 ```bash
-python -m yaa.yaa --serve
-```
 
-Command line interactive mode:
 
 ```bash
-python -m yaa.yaa
+# python -m yaa.yaa --help
+usage: yaa.py [-h] [--run [RUN] | --serve]
+              [--config CONFIG]
+              [--port PORT]
+
+yaa agent command line interface
+
+options:
+  -h, --help       show this help message
+                   and exit
+  --run [RUN]      send command to agent
+  --serve          server mode
+  --config CONFIG  config file
+  --port PORT      server port default 12345
 ```
 
 ## Project Implementation

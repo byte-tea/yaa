@@ -19,7 +19,7 @@ def main():
 
     # 定义互斥参数组，--run 和 --serve 不能同时使用
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--run', nargs='?', const='', help='运行智能体（可选值）')
+    group.add_argument('--run', nargs='?', const='', help='传入命令到智能体')
     group.add_argument('--serve', action='store_true', help='启动服务模式')
     parser.add_argument('--config', type=str, help='配置文件路径')
 

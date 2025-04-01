@@ -6,10 +6,7 @@ on:
     paths:
       - '.github/workflows/deploy-docs.yaml'
       - 'assets/**'
-      - 'docs/**'
-      - 'CONTRIBUTING.md'
-      - 'README.md'
-      - 'README.en.md'
+      - '**.md'
 
 concurrency:
   group: "pages"

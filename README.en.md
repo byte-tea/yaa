@@ -22,9 +22,6 @@ cd yaa
 Usage:
 
 ```bash
-
-
-```bash
 # python -m yaa.yaa --help
 usage: yaa.py [-h] [--run [RUN] | --serve]
               [--config CONFIG]

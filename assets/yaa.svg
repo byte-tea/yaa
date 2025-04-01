@@ -10,7 +10,7 @@
     stroke-width="2"
   />
   
-  <!-- 五官 -->
+  <!-- 面部 -->
   <line x1="35" y1="45" x2="40" y2="50" stroke="#FFF" stroke-width="2" />
   <line x1="45" y1="35" x2="50" y2="40" stroke="#FFF" stroke-width="2" />
   <path

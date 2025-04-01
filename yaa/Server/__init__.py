@@ -1,6 +1,5 @@
 """yaa 服务端接口"""
-from ..Server.BaseServer import BaseServer
-
+import yaa.Server.BaseServer as BaseServer
 
 __all__ = [
     "BaseServer"

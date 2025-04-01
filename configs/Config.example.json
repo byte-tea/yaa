@@ -1,7 +1,8 @@
 {
     "config": {
         "yaa": {
-            "stream": false
+            "stream": false,
+            "language": "简体中文（zh_CN）"
         },
         "llm_api": {
             "provider": {
@@ -35,11 +36,10 @@
         },
         "tool": {
             "base_tool": {
-                "auto_approve": false,
-                "timeout": 30,
-                "max_memory": "512MB",
-                "cpu_threshold": 0.8,
-                "interrupt_monitor": true
+                "auto_approve": true
+            },
+            "finish": {
+                "auto_approve": true
             }
         }
     }

@@ -1,10 +1,11 @@
-import uuid
 from datetime import datetime
-from yaa.Agent.BaseAgent import Agent
+import uuid
+from yaa.Agent.ToolCall import Agent
+from yaa.Client.BaseClient import BaseClient
 
-class BaseClient:
+class Client(BaseClient):
     @classmethod
-    def run(message=None):
+    def run(cls, message=None):
         help_command = ['', '/?', '/help', '/h']
 
         # 创建会话数据
@@ -13,6 +14,7 @@ class BaseClient:
             'title': '会话',
             'start_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "character": "您是 yaa，一个智能体。",
+            "status": "进行中",
             'messages': []
         }
 
@@ -46,7 +48,13 @@ class BaseClient:
                 # 交给智能体处理
                 agent_response = Agent.Agent(session_data)
 
-                print('* ' + agent_response['messages'][-1]['content'])
+                for response in agent_response['messages']:
+                    if response['role'] == 'assistant':
+                        print('* ' + response['content'])
+                    elif response['role'] == 'system':
+                        print('$ ' + response['content'])
+                    else:
+                        print('# ' + response['content'])
         except KeyboardInterrupt:
             print("\n退出客户端")
         except Exception as e:

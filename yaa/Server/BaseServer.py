@@ -8,7 +8,8 @@
 
 import socket
 import json
-from ..Agent.BaseAgent import BaseAgent
+from yaa.Agent.BaseAgent import Agent
+from yaa.Auth.KeyAuth import Auth
 
 class BaseServer:
     def __init__(self, config=None):
@@ -37,7 +38,7 @@ class BaseServer:
         """监听并处理请求"""
         self.socket.bind((self.host, self.port))
         self.socket.listen(self.max_connections)
-        print(f"Server listening on {self.host}:{self.port}")
+        print(f"服务器正在监听：{self.host}:{self.port}")
         
         while True:
             conn, addr = self.socket.accept()
@@ -53,17 +54,29 @@ class BaseServer:
                 # 解析会话数据
                 session_data = json.loads(body)
 
+                # 验证授权
+                if not self._validate_auth(headers.get('Authorization')):
+                    conn.sendall(b'HTTP/1.1 401 Unauthorized\n\n')
+                    continue
+
+                # 检查请求格式是否完整
+                if not self._check_request_format(session_data):
+                    conn.sendall(b'HTTP/1.1 400 Bad Request\n\n')
+                    continue
+
                 # 交给智能体处理
-                response_data = BaseAgent.Agent(session_data)
+                response_data = Agent.Agent(session_data)
                 
                 # 返回响应
                 conn.sendall(b'HTTP/1.1 200 OK\n')
                 conn.sendall(b'Content-Type: application/json\n\n')
                 conn.sendall(json.dumps(response_data).encode('utf-8'))
-                
+            except KeyboardInterrupt:
+                print("\n服务已停止")
+                break
             except Exception as e:
                 conn.sendall(b'HTTP/1.1 500 Internal Server Error\n\n')
-                print(f"Error processing request: {e}")
+                print(f"处理请求时出错：{e}")
             finally:
                 conn.close()
     
@@ -83,5 +96,22 @@ class BaseServer:
     
     def _validate_auth(self, auth_header):
         """验证授权头"""
-        # TODO
-        pass
+        return Auth.check_key(auth_header)
+
+    def _check_request_format(session_data):
+        """
+        检查会话数据格式是否完整
+        
+        参数:
+        - session_data (dict): 会话数据
+        
+        返回值:
+        - bool: 请求格式是否完整
+        """
+        required_keys = ['id', 'status', 'messages']
+        
+        for key in required_keys:
+            if key not in session_data or not session_data[key] :
+                return False
+        
+        return True

@@ -8,10 +8,10 @@
 
 import sys
 import argparse
-from .Client.BaseClient import BaseClient
-from .Config.Config import Config
-from .Config.ServerConfig import ServerConfig
-from .Server.BaseServer import BaseServer
+from yaa.Client.Client import Client
+from yaa.Config.Config import Config
+from yaa.Config.ServerConfig import ServerConfig
+from yaa.Server.BaseServer import BaseServer
 
 sys.path.append('..')
 def main():
@@ -44,15 +44,15 @@ def main():
             print(f"启动服务, 端口号: {config['yaa_server']['port']}")
             server.listen()
         except KeyboardInterrupt:
-            print("\n服务已停止")
+            print("已停止")
         except Exception as e:
             print(f"服务启动失败: {str(e)}")
     elif args.run:
         # 命令行交互模式
-        BaseClient.run(args.run)
+        Client.run(args.run)
     else:
         # 命令行交互模式
-        BaseClient.run()
+        Client.run()
 
 if __name__ == "__main__":
     main()

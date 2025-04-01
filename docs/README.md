@@ -1,8 +1,8 @@
 # 项目架构
 
-yaa 智能体采用服务端、客户端结构，客户端使用 HTML + CSS + JS，服务端使用 Python。
+yaa 智能体采用服务端、客户端结构，服务端使用 Python，客户端使用 HTML + CSS + JS。
 
-## 构思
+## 实现
 
 ### 客户端
 
@@ -134,7 +134,8 @@ flowchart TD
   - 编号：用于唯一标识会话数据，在客户端使用 uuid 生成。
   - 标题（可选，缺省值由大模型根据消息内容配合提示词生成）：用于向用户展示会话数据的主题。
   - 开始时间（可选，缺省值取当前格林尼治时间）：记录会话数据的开始时间。
-  - 会话数据类型：如`聊天`、`代码`、`文档`等。
+  - 智能体人格：如`您是 yaa，一个智能体。`等。
+  - 状态：记录会话数据的状态，如`进行中`、`已中断`、`已完成`。
 - 消息：一般包含智能体消息、系统错误消息、用户发送的消息、大模型的回复消息等。
   - 角色：如`智能体`、`用户`、`系统`等。
   - 内容：消息的内容。
@@ -146,7 +147,8 @@ flowchart TD
     "id": "string",
     "title": "string",
     "start_time": "string",
-    "type": "string",
+    "character": "string",
+    "status": "string",
     "messages": [
         {
             "role": "string",
@@ -188,8 +190,15 @@ flowchart TD
             }
         },
         "prompt": {
-            "function": "string",
-            "another_function": "string"
+            "todo": "todo"
+        },
+        "tool": {
+            "base_tool": {
+                "auto_approve": true
+            },
+            "finish": {
+                "auto_approve": true
+            }
         }
     }
 }
@@ -234,3 +243,4 @@ flowchart TD
 ## 流程分析
 
 - [最基本流程分析](FlowAnalyze/BaseFlowAnalyze.md)
+- [流程分析](FlowAnalyze/FlowAnalyze.md)

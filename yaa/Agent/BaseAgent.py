@@ -1,10 +1,11 @@
-from ..Config.Config import Config
-# from ..LLM_API.BaseAPI import BaseAPI
-from ..LLM_API.OpenAI import OpenAI_API
-from ..Prompts.BasePromptGenerater import BasePromptGenerater
+from yaa.Config.Config import Config
+# from yaa.LLM_API.BaseAPI import BaseAPI
+from yaa.LLM_API.OpenAI import OpenAI_API
+from yaa.PromptGen.BasePromptGenerater import BasePromptGenerater
 
-class BaseAgent:
+class Agent:
     """智能体基类"""
+    @classmethod
     def Agent(session_data):
         """智能体主处理函数
         
@@ -12,7 +13,7 @@ class BaseAgent:
             session_data (dict): 补全后的会话数据
             
         返回:
-            response_data (dict): 加入智能体信息的会话数据
+            dict: 格式化后的智能体回复数据
         """
 
         def prase_response(session_data):
@@ -28,7 +29,7 @@ class BaseAgent:
                 "id": session_data.get("id", ""),
                 "title": session_data.get("title", ""),
                 "start_time": session_data.get("start_time", ""),
-                "finish_reason": "completed",  # 默认完成状态
+                "finish_reason": "已完成",  # 默认完成状态
                 "messages": [
                     {
                         "role": "assistant",
@@ -49,7 +50,7 @@ class BaseAgent:
             # 格式化用户消息并附上提示词
             session_data = BasePromptGenerater.PromptGenerate(session_data)
 
-            # 调用大模型API
+            # 调用大模型 API
             # response_data = BaseAPI.request(session_data)
             response_data = OpenAI_API.request(merged_data)
 
@@ -57,9 +58,11 @@ class BaseAgent:
             
         except Exception as e:
             # 错误处理
+            if not isinstance(session_data.get('messages'), list):
+                session_data['messages'] = []
             session_data['messages'].append({
                 "role": "system",
-                "content": f'处理请求时出错: {str(e)}'
+                "content": f'智能体执行出错：{str(e)}'
             })
+            session_data['status'] = '已中断'
             return prase_response(session_data)
-    

@@ -11,7 +11,7 @@ class Config:
     # 基础配置
     YAA_CONFIG = {
         'stream': True,
-        'language': 'zh_CN'
+        'language': '简体中文（zh-CN）'
     }
 
     # LLM API 配置
@@ -48,14 +48,13 @@ class Config:
         'error': 'TODO：{error}'
     }
     
-    # TODO 工具调用配置
+    # 工具调用配置
     TOOL_CONFIG = {
         'base_tool': {
-            'auto_approve': False,
-            'timeout': 30,
-            'max_memory': '512MB',
-            'cpu_threshold': 0.8,
-            'interrupt_monitor': True
+            'auto_approve': True
+        },
+        "finish": {
+            "auto_approve": True
         }
     }
 

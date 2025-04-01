@@ -22,6 +22,7 @@ def main():
     group.add_argument('--run', nargs='?', const='', help='传入命令到智能体')
     group.add_argument('--serve', action='store_true', help='启动服务模式')
     parser.add_argument('--config', type=str, help='配置文件路径')
+    parser.add_argument('--server-config', type=str, help='服务配置文件路径')
 
     # serve 模式的可选参数
     parser.add_argument('--port', type=int, default=12345, help='服务端口号，默认 12345')
@@ -31,6 +32,8 @@ def main():
     # 如果指定了配置文件，则加载配置文件
     if args.config:
         Config.update_config(args.config)
+    if args.server_config:
+        ServerConfig.update_config(args.server_config)
     if args.serve:
         try:
             # 构建运行时配置

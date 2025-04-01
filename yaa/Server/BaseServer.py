@@ -8,8 +8,10 @@
 
 import socket
 import json
+
 from yaa.Agent.BaseAgent import Agent
 from yaa.Auth.KeyAuth import Auth
+from yaa.Config.ServerConfig import ServerConfig
 
 class BaseServer:
     def __init__(self, config=None):
@@ -21,7 +23,9 @@ class BaseServer:
                 - security: 安全配置
         """
         if config is None:
-            config = {}
+            config = ServerConfig.get_default_config()
+        else:
+            config = ServerConfig.merge_config(config)
             
         server_config = config.get('yaa_server', {})
         self.host = server_config.get('ip', 'localhost')

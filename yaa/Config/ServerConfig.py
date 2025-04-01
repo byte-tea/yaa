@@ -4,6 +4,8 @@
 1. 提供服务端相关的默认配置项
 """
 
+from yaa.Config.ConfigTools import ConfigTools
+
 class ServerConfig:
     """服务端默认配置类"""
     
@@ -36,40 +38,48 @@ class ServerConfig:
             'yaa_server': cls.YAA_SERVER_CONFIG,
             'security': cls.SECURITY_CONFIG
         }
-    
-    @classmethod
-    def _deep_merge(cls, default_dict, target_dict):
-            """深度合并两个字典，用户字典优先
-            
-            参数:
-                default_dict (dict): 默认配置字典
-                target_dict (dict): 目标配置字典
-                
-            返回:
-                dict: 合并后的字典
-            """
-            merged = default_dict.copy()
-            for key, value in target_dict.items():
-                if (key in merged and isinstance(merged[key], dict)
-                    and isinstance(value, dict)):
-                    merged[key] = cls._deep_merge(merged[key], value)
-                else:
-                    merged[key] = value
-            return merged
 
     @classmethod
-    def merge_config(cls, args_config=None):
+    def merge_config(cls, higher_priority_config=None, lower_priority_config=None):
         """合并用户配置和默认配置
         
         参数:
-            args_config (dict): 服务器运行时参数传入编译的配置字典
+            higher_priority_config (dict): 服务器运行时参数传入编译的配置字典
             
         返回:
             dict: 合并后的配置字典，参数配置优先于默认配置
         """
-        if args_config is None:
-            args_config = {}
+        if lower_priority_config is None:
+            lower_priority_config = cls.get_default_config()
+
+        if higher_priority_config is None:
+            higher_priority_config = {}
             
-        merged_config = cls._deep_merge(cls.get_default_config(), args_config)
+        merged_config = ConfigTools.deep_merge(lower_priority_config, higher_priority_config)
         
         return merged_config
+    
+    @classmethod
+    def update_config(cls, runtime_config_path=None):
+        """更新默认配置（运行时配置优先）
+        
+        参数:
+            runtime_config_path (src): 运行时提供的服务设置 json 的路径
+        """
+        if runtime_config_path is None:
+            raise ValueError('未提供运行时配置路径')
+
+        import json
+
+        runtime_config = json.load(open(runtime_config_path, 'r'))
+
+        if runtime_config is None:
+            raise ValueError('未提供运行时配置')
+        
+        merged_config = ConfigTools.deep_merge(cls.get_default_config(), runtime_config)
+
+        # 更新 YAA 服务配置
+        cls.YAA_SERVER_CONFIG = {**cls.YAA_SERVER_CONFIG, **merged_config['yaa_server']}
+        
+        # 更新安全相关配置
+        cls.SECURITY_CONFIG = {**cls.SECURITY_CONFIG, **merged_config['security']}

@@ -5,7 +5,11 @@ on:
   push:
     paths:
       - '.github/workflows/deploy-docs.yaml'
+      - 'assets/**'
       - 'docs/**'
+      - 'CONTRIBUTING.md'
+      - 'README.md'
+      - 'README.en.md'
 
 concurrency:
   group: "pages"
@@ -28,8 +32,10 @@ jobs:
     
     - name: 部署 markdown.html
       uses: PJ-568/MARKDOWN.HTML@v1.10.1
-      with:
-        target-dir: '.'
+    
+    - name: 删除不需要部署的文件
+      run: |
+        rm -rf yaa/
 
     - name: 配置 Pages
       uses: actions/configure-pages@v4

@@ -53,6 +53,11 @@ classDiagram
         +Agent(session_data: dict) -> dict
     }
     
+    class ToolCall {
+        +tool_call(session_data) : 工具调用处理
+        +prase_response(session_data) : 响应格式化
+    }
+    
     class BaseAPI {
         +request(session_data: dict) -> dict
     }
@@ -68,16 +73,24 @@ classDiagram
         +execute(params: dict) -> dict
     }
     
+    class PromptGenerater {
+        +PromptGenerate(session_data) : 提示词生成
+    }
+    
     BaseServer --> BaseAgent : 调用
+    BaseAgent <|-- ToolCall : 继承实现
     BaseAgent --> BaseAPI : 使用
     BaseAgent --> BaseTool : 调用
+    BaseAgent --> PromptGenerater : 使用
     BaseAPI <|-- OpenAI_API : 继承
     
     note for BaseServer "处理TCP连接和HTTP请求"
     note for BaseAgent "核心业务逻辑处理"
+    note for ToolCall "工具调用具体实现\n- 检测工具调用\n- 格式化响应"
     note for BaseAPI "大语言模型API抽象接口"
     note for OpenAI_API "OpenAI API具体实现"
     note for BaseTool "工具调用基础框架\n- 参数验证\n- 资源限制\n- 结果标准化"
+    note for PromptGenerater "提示词生成器\n- 组合提示模板\n- 处理会话上下文"
 ```
 
 ### 整体架构图

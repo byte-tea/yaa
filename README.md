@@ -37,40 +37,15 @@ cp configs/ServerConfig.example.json ServerConfig.json
 以服务模式启动：
 
 ```bash
-python -m yaa.yaa --serve --config Config.json --server-config ServerConfig.json
+cargo run --release -- --serve --port 12345
 ```
 
 以命令行交互模式启动：
 
 ```bash
-python -m yaa.yaa --config Config.json
+cargo run --release
 > 请用 Python 写一个冒泡排序算法。
 * 好的……
-```
-
-单行命令交互：
-
-```bash
-python -m yaa.yaa --run '请用 Python 写一个冒泡排序算法。' --config Config.json
-* 好的……
-```
-
-更多使用方法：
-
-```bash
-# 执行：python -m yaa.yaa --help
-usage: yaa.py [-h] [--run [RUN] | --serve]
-              [--config CONFIG]
-              [--port PORT]
-
-yaa 智能体命令行工具
-
-options:
-  -h, --help       显示帮助信息
-  --run [RUN]      传入命令到智能体
-  --serve          启动服务模式
-  --config CONFIG  配置文件路径
-  --port PORT      服务端口号，默认 12345
 ```
 
 ## 项目实现

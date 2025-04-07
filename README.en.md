@@ -37,40 +37,15 @@ cp configs/ServerConfig.example.json ServerConfig.json
 Start in server mode:
 
 ```bash
-python -m yaa.yaa --serve --config Config.json --server-config ServerConfig.json
+cargo run --release -- --serve --port 12345
 ```
 
 Start in interactive CLI mode:
 
 ```bash
-python -m yaa.yaa --config Config.json
+cargo run --release
 > Please write a bubble sort algorithm in Python.
 * Working on it...
-```
-
-Run single command:
-
-```bash
-python -m yaa.yaa --run 'Please write a bubble sort algorithm in Python.' --config Config.json
-* Working on it...
-```
-
-More usage:
-
-```bash
-# Run: python -m yaa.yaa --help
-usage: yaa.py [-h] [--run [RUN] | --serve]
-              [--config CONFIG]
-              [--port PORT]
-
-yaa agent command line interface
-
-options:
-  -h, --help        show this help message and exit
-  --run [RUN]       send command to agent
-  --serve           server mode
-  --config CONFIG   config file path
-  --port PORT       server port number, default 12345
 ```
 
 ## Project Implementation

@@ -1,259 +1,196 @@
 # 项目架构
 
-yaa 智能体采用服务端、客户端结构，服务端使用 Python，客户端使用 HTML + CSS + JS。
+yaa 智能体采用 Rust 实现，支持 WASM（WebAssembly）和 WASI 运行时环境，可作为服务器模式或命令行交互模式运行，也可编译为 WASM 被 HTML 调用。
 
 ## 实现
 
-### 客户端
+### 核心功能
 
-1. 提供用户界面
-2. 管理会话数据
-3. 存储会话数据历史、存储配置、存储提示词。
+1. 会话数据管理 (SessionData)
+2. 工具调用框架 (ToolRegistry)
+3. 提示词生成器 (PromptGenerator)
+4. 大语言模型 API 集成 (OpenAIClient)
+5. 智能体核心逻辑 (process_session)
+6. 工具实现：
+   - 再度思考工具 (RethinkTool)
+   - 完成会话工具 (FinishTool)
 
-### 服务端
-
-1. 智能体实现
-2. 工具使用（函数调用）实现
-3. 当会话数据中缺省时提供默认配置和默认提示词。
-4. 解析会话数据将信息交给大模型生成回答，再根据大模型的回答调用工具
-
-#### 工具调用安全机制
+### 代码结构
 
 ```mermaid
-%% yaa 工具调用安全机制图
-sequenceDiagram
-    用户 ->> 身份验证: 发起请求（携带 API Key）
-    用户 ->> 日志记录: 记录请求元数据
-    身份验证 ->> 用户: 验证 Key 有效性
-    身份验证 ->> 资源限制器: 设置 CPU/内存阈值
-    资源限制器 ->> 中断监控器: 启动执行环境
-    中断监控器 ->> 用户: 返回执行结果
-    中断监控器 ->> 日志记录: 记录执行状态
-```
-
-#### 服务端代码结构
-
-```mermaid
-%% yaa 服务端代码结构图
+%% yaa 实现代码结构图
 classDiagram
-    class BaseServer {
-        +host: str
-        +port: int
-        +max_connections: int
-        +api_keys: list[str]
-        +socket: socket.socket
+    class SessionData {
+        +id: String
+        +title: Option<String>
+        +start_time: String
+        +character: String
+        +status: String
+        +messages: Vec<Message>
+        +config: Config
         
-        +__init__(config: dict)
-        +listen()
-        +_parse_request(data: str) -> tuple[dict, str]
-        +_validate_auth(auth_header: str) -> bool
+        +new(character: String) -> Self
+        +add_message(role: Role, content: String)
     }
-    
-    class BaseAgent {
-        +Agent(session_data: dict) -> dict
-    }
-    
-    class ToolCall {
-        +tool_call(session_data) : 工具调用处理
-        +prase_response(session_data) : 响应格式化
-    }
-    
-    class BaseAPI {
-        +request(session_data: dict) -> dict
-    }
-    
-    class OpenAI_API {
-        +request(session_data: dict) -> dict
-    }
-    
-    class BaseTool {
-        +input_schema: dict
-        +required_resources: dict
+
+    class ToolRegistry {
+        +tools: HashMap<String, Tool>
         
-        +execute(params: dict) -> dict
+        +new() -> Self
+        +execute(name: String, params: Value) -> Result<Value>
     }
-    
-    class PromptGenerater {
-        +PromptGenerate(session_data) : 提示词生成
+
+    class PromptGenerator {
+        +generate(session_data: &SessionData, tools: &[ToolInfo]) -> String
+        +generate_with_current_time(session_data: &SessionData, tools: &[ToolInfo]) -> String
     }
-    
-    BaseServer --> BaseAgent : 调用
-    BaseAgent <|-- ToolCall : 继承实现
-    BaseAgent --> BaseAPI : 使用
-    BaseAgent --> BaseTool : 调用
-    BaseAgent --> PromptGenerater : 使用
-    BaseAPI <|-- OpenAI_API : 继承
-    
-    note for BaseServer "处理TCP连接和HTTP请求"
-    note for BaseAgent "核心业务逻辑处理"
-    note for ToolCall "工具调用具体实现\n- 检测工具调用\n- 格式化响应"
-    note for BaseAPI "大语言模型API抽象接口"
-    note for OpenAI_API "OpenAI API具体实现"
-    note for BaseTool "工具调用基础框架\n- 参数验证\n- 资源限制\n- 结果标准化"
-    note for PromptGenerater "提示词生成器\n- 组合提示模板\n- 处理会话上下文"
+
+    class OpenAIClient {
+        +api_key: String
+        +base_url: Option<String>
+        
+        +new(api_key: String, base_url: Option<String>) -> Self
+        +chat_completion(messages: Vec<Message>) -> Result<String>
+    }
+
+    class Agent {
+        +process_session(session_data: SessionData) -> Result<AgentResponseData>
+    }
+
+    class RethinkTool {
+        +name() -> &str
+        +execute() -> Result<ToolOutput>
+    }
+
+    class FinishTool {
+        +name() -> &str
+        +execute() -> Result<ToolOutput>
+    }
+
+    SessionData --> Message : 包含
+    SessionData --> Config : 包含
+    Agent --> SessionData : 处理
+    Agent --> ToolRegistry : 使用
+    Agent --> PromptGenerator : 使用
+    Agent --> OpenAIClient : 使用
+    ToolRegistry --> RethinkTool : 注册
+    ToolRegistry --> FinishTool : 注册
+    ToolRegistry --> ToolInput : 处理
+    ToolRegistry --> ToolOutput : 生成
 ```
 
-### 整体架构图
+### 核心工作流程
 
-用户在客户端输入指示或对会话数据进行修改后，客户端将当前会话数据通过 API 发送至服务端；
-服务端在验证密钥通过后，将会话数据中缺省的配置和缺省的预设提示词补全后传入新建的智能体实例；
-智能体实例根据指示或对会话数据进行修改后，将修改后的会话数据返回给客户端；
+1. 接收会话数据 (SessionData)
+2. 检查并补全会话配置
+3. 生成提示词 (PromptGenerator)
+4. 调用大语言模型 API (OpenAIClient)
+5. 解析工具调用 (extract_tool_call)
+6. 检查工具授权：
+   - 检查会话配置中的 auto_approve 设置
+   - 检查用户消息中的授权标记
+7. 执行工具 (ToolRegistry)
+8. 生成响应数据 (AgentResponseData/StreamResponseData)
 
 ```mermaid
-%% yaa 智能体框架架构图
-flowchart TD
-    subgraph Client[客户端]
-        HIST[会话数据历史和状态] --> |读取| FE[用户界面]
-        FE --> |创建任务| SESSIONER[会话数据交互管理器]
-        SESSIONER --> |保存| HIST[会话数据历史和状态]
-        FE --> |配置| CFG[配置管理]
-        FE --> |定义| PROMPT[提示词库]
-    end
-
-    subgraph Server[服务端]
-        SESSIONER --> |会话数据历史、用户指示和密钥| AUTH{密钥是否合规？}
-        AUTH --> |是，创建智能体实例| TASK{分析并确定任务目标}
-        AUTH --> |否，返回错误| SESSIONER
-        AUTO_RETRY --> |否| BREAKER
-        BREAKER --> |会话数据历史和中断类型| SESSIONER
-        AGENT --> |实时同步状态（流式传输）| SESSIONER
-
-        subgraph AGENT[智能体]
-            TASK --> PROMPT_GEN[提示词生成组合器]
-            PROMPT_GEN -->|提示词| API_SERVICE[大语言模型 API]
-            API_SERVICE --> |API 出错| AUTO_RETRY{是否自动重试？}
-            AUTO_RETRY --> |是| API_SERVICE
-            API_SERVICE -->|流式响应| TOOL_DETECTOR{是否调用工具函数？}
-            TOOL_DETECTOR -->|是| APPROVE{是否已由用户自动授权？}
-            TOOL_DETECTOR --> |否| FINISH_DETECTOR{是否完成任务？}
-            FINISH_DETECTOR --> |是| BREAKER{中断管理}
-            FINISH_DETECTOR --> |否| BREAKER{中断管理}
-            APPROVE --> |是| TOOL_EXEC[工具执行器]
-            APPROVE --> |否| BREAKER
-            TOOL_EXEC -->|工具结果| PROMPT_GEN
-        end
-    end
+%% yaa 智能体工作流程图
+sequenceDiagram
+    客户端->>+智能体: 发送 SessionData
+    智能体->>+提示词生成器: 生成提示词
+    提示词生成器-->>-智能体: 返回提示词
+    智能体->>+大语言模型API: 发送提示词
+    大语言模型API-->>-智能体: 返回响应
+    智能体->>+工具解析器: 解析工具调用
+    工具解析器-->>-智能体: 返回工具名和参数
+    智能体->>+授权检查: 验证工具调用权限
+    授权检查-->>-智能体: 返回授权结果
+    智能体->>+工具注册表: 执行工具
+    工具注册表-->>-智能体: 返回工具结果
+    智能体-->>-客户端: 返回 AgentResponseData
 ```
+
+### 工具实现
+
+#### 再度思考工具 (RethinkTool)
+
+- 功能：将当前的对话历史再次输入到模型中，让模型继续思考更多的可能性
+- 参数：
+  - 理由 (string, required): 调用这个工具的理由
+- 默认配置：自动授权 (auto_approve: true)
+
+#### 完成会话工具 (FinishTool)
+
+- 功能：当任务完成时调用此工具结束会话
+- 参数：
+  - 理由 (string, required): 任务完成的总结理由
+- 默认配置：自动授权 (auto_approve: true)
 
 ### 数据结构
 
-#### 会话数据
+#### 会话数据 (SessionData)
 
-会话数据由客户端生成并发送至服务端。
+```rust
+pub struct SessionData {
+    pub id: String,
+    pub title: Option<String>,
+    pub start_time: String,
+    pub character: String,
+    pub status: String,
+    pub messages: Vec<Message>,
+    pub config: Config,
+}
 
-会话数据主要包含三个部分：
+pub struct Message {
+    pub role: Role, // user|assistant|system|tool|error
+    pub content: String,
+}
 
-- 属性：
-  - 编号：用于唯一标识会话数据，在客户端使用 uuid 生成。
-  - 标题（可选，缺省值由大模型根据消息内容配合提示词生成）：用于向用户展示会话数据的主题。
-  - 开始时间（可选，缺省值取当前格林尼治时间）：记录会话数据的开始时间。
-  - 智能体人格：如`您是 yaa，一个智能体。`等。
-  - 状态：记录会话数据的状态，如`进行中`、`已中断`、`已完成`。
-- 消息：一般包含智能体消息、系统错误消息、用户发送的消息、大模型的回复消息等。
-  - 角色：如`智能体`、`用户`、`系统`等。
-  - 内容：消息的内容。
-- 配置（可选，缺省值使用默认配置）：包含 yaa 的配置信息（如覆盖系统默认提示词、最大上下文长度等软件设置）和大模型的配置信息（如 API、密钥、名称、模型参数）等。
-  - 提示词：如函数调用的提示词模板、系统信息的提示词模板等。
-
-```json
-{
-    "id": "string",
-    "title": "string",
-    "start_time": "string",
-    "character": "string",
-    "status": "string",
-    "messages": [
-        {
-            "role": "string",
-            "content": "string"
-        },
-        {
-            "role": "string",
-            "content": "string"
-        }
-    ],
-    "config": {
-        "yaa" : {
-            "stream": "bool",
-            "language": "string"
-        },
-        "llm_api": {
-            "provider": {
-                "api_url": "string",
-                "api_key": "string",
-                "model_name": "string",
-                "model_type": {
-                    "is_function_call": "bool",
-                    "is_reasoning": "bool"
-                },
-                "cost_per_ktoken": "float",
-                "cost_unit": "string",
-                "max_tokens": "int",
-                "model_settings": {
-                    "use_costum_temp": "bool",
-                    "temperature": "float"
-                },
-            },
-            "stream": "bool",
-            "request_timeout": "int",
-            "interval": "int",
-            "retry": {
-                "times": "int",
-                "delay": "int"
-            }
-        },
-        "prompt": {
-            "todo": "todo"
-        },
-        "tool": {
-            "base_tool": {
-                "auto_approve": true
-            },
-            "finish": {
-                "auto_approve": true
-            }
-        }
-    }
+pub struct Config {
+    pub yaa: YaaConfig,
+    pub llm_api: LlmApiConfig,
+    pub tool: ToolConfig,
 }
 ```
 
-#### 智能体回复数据
+#### 智能体响应数据
 
-智能体回复数据由 yaa 解析会话数据并执行生成结果后发送至客户端。
+```rust
+pub struct AgentResponseData {
+    pub id: String,
+    pub title: Option<String>,
+    pub start_time: String,
+    pub finish_reason: String,
+    pub messages: Vec<Message>,
+    pub usage: Usage,
+}
 
-智能体回复数据主要包含两个部分：
-
-- 属性：
-  - 编号：用于唯一标识会话数据。
-  - 标题（可选，如果和发送过来的会话数据相同，则取发送过来的会话数据标题）：用于向用户展示会话数据的主题。
-  - 开始时间：记录会话数据的开始时间。
-  - 智能体回复数据中断（结束）原因：如`完成`、`等待反馈`、`失败`等。
-- 消息：一般包含智能体消息、系统错误消息、用户发送的消息、大模型的回复消息等。
-  - 角色：如`智能体`、`系统`等。
-  - 内容：消息的内容。
-- 用量：如大模型的用量。
-
-```json
-{
-    "id": "string",
-    "title": "string",
-    "start_time": "string",
-    "finish_reason": "string",
-    "messages": [
-        {
-            "role": "string",
-            "content": "string"
-        }
-    ],
-    "usage": {
-        "prompt_tokens": "int",
-        "completion_tokens": "int",
-        "total_tokens": "int"
-    }
+pub struct StreamResponseData {
+    pub id: String,
+    pub status: String,
+    pub message: Message,
 }
 ```
+
+### 已知问题
+
+1. 消息角色处理问题：
+   - 当消息角色为 Tool 时调用 API，API 返回的数据无法格式化为 JSON
+   - 其他非 User 和 Assistant 的消息角色也可能导致类似问题
+
+### 待完成功能
+
+1. WASM 支持 (web/模块)
+   - WASM 绑定 (bindings.rs)
+   - Web Worker 支持 (worker.rs)
+
+2. 命令行模式 (cli/模块)
+   - 命令行入口 (mod.rs)
+   - 子命令实现 (commands.rs)
 
 ## 流程分析
 
-- [最基本流程分析](FlowAnalyze/BaseFlowAnalyze.md)
 - [流程分析](FlowAnalyze/FlowAnalyze.md)
+
+## 新工具
+
+- [贡献新工具](new_tools.md)

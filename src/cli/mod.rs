@@ -1,16 +1,16 @@
 pub mod commands;
 
-use crate::core::session::{SessionData, Message, FinishReason};
+use crate::core::session::{FinishReason, Message, SessionData};
 use crate::core::tool::ToolRegistry;
 use crate::agent::{process_session, api::OpenAIClient};
 use anyhow::Result;
 use std::io::{self, Write};
 
-pub async fn run_interactive(tool_registry: &ToolRegistry, client: &OpenAIClient) -> Result<()> {
+pub async fn run_interactive(tool_registry: &ToolRegistry, client: &OpenAIClient, session_data: &SessionData) -> Result<()> {
     println!("=== YAA 智能体命令行交互模式 ===");
     println!("输入 '/exit' 退出");
     
-    let mut session = SessionData::default();
+    let mut session = session_data.clone();
     
     loop {
         print!("> ");

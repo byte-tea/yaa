@@ -48,6 +48,10 @@ cargo run --release
 * 好的……
 ```
 
+## 贡献
+
+详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 项目实现
 
 详见 [yaa 文档](docs/README.md)。

@@ -133,7 +133,7 @@ async fn main() -> std::io::Result<()> {
         if let Some(cmd) = args.command {
             handle_command(cmd).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         } else {
-            cli::run_interactive(&tool_registry, &client).await.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            cli::run_interactive(&tool_registry, &client, &session_data).await.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         }
         Ok(())
     }

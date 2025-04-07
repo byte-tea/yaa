@@ -8,6 +8,8 @@ pub enum ApiError {
     RequestFailed(String),
     #[error("API response parsing failed: {0}")]
     ParseFailed(String),
+    #[error("Invalid API response format: {0}\nRaw response: {1}")]
+    InvalidFormat(String, String),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -92,11 +94,11 @@ impl OpenAIApi for &OpenAIClient {
             .map_err(|e| ApiError::ParseFailed(e.to_string()))?;
 
         let json: serde_json::Value = serde_json::from_str(&response_text)
-            .map_err(|e| ApiError::ParseFailed(format!("{} - Response: {}", e, response_text)))?;
+            .map_err(|e| ApiError::InvalidFormat(e.to_string(), response_text.clone()))?;
 
         json["choices"][0]["message"]["content"]
             .as_str()
             .map(|s| s.to_string())
-            .ok_or_else(|| ApiError::ParseFailed(format!("Invalid response format - Response: {}", response_text)))
+            .ok_or_else(|| ApiError::InvalidFormat("Missing required fields".to_string(), response_text))
     }
 }

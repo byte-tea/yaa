@@ -16,8 +16,25 @@
 - `智能体（agent）`：智能体核心实现
 - `核心（core）`：基础数据结构与框架
 - `命令行（cli）`：命令行接口
-- `web`：Web接口
+- `web`：Web 接口
 - `工具（agent/tools）`：智能体工具实现
+
+## 环境配置
+
+1. 安装 cargo 和 Rust。
+2. 配置 cargo 镜像源（可选）。
+3. VSCode 配置：
+
+   - 安装 rust-analyzer 扩展。
+
+## 测试
+
+运行 `cargo test` 命令，确保所有测试通过。
+
+## 编译
+
+- 运行 `cargo build` 命令以编译 Debug 版本的二进制文件。
+- 运行 `cargo build --release` 命令以编译更小更快的发行版本的二进制文件。
 
 ## 提交更改
 

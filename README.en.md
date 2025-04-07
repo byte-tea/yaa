@@ -48,6 +48,10 @@ cargo run --release
 * Working on it...
 ```
 
+## Contribute
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
 ## Project Implementation
 
 See [yaa documentation](docs/README.md) for details.

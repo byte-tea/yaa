@@ -1,17 +1,17 @@
 mod agent;
 mod cli;
 mod core;
-use actix_web::{web, App, HttpServer};
-use agent::{process_session, api::OpenAIClient};
-use clap::Parser;
-use core::{session::SessionData, tool::ToolRegistry};
+use actix_web::{App, HttpServer, web};
 use agent::tools::finish::FinishTool;
 use agent::tools::rethink::RethinkTool;
+use agent::{api::OpenAIClient, process_session};
+use clap::Parser;
 use cli::commands::{Commands, handle_command};
+use core::{session::{SessionData, Config}, tool::ToolRegistry};
 use tokio;
 
-use std::fs;
 use anyhow::{Context, Result};
+use std::fs;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -35,28 +35,28 @@ struct Args {
 fn load_config(path: Option<&str>) -> Result<SessionData> {
     // 创建默认配置
     let mut session_data = SessionData::default();
-    
+
     // 如果指定了配置文件，则加载并深度合并用户配置
     if let Some(config_path) = path {
         let config_content = fs::read_to_string(config_path)
             .with_context(|| format!("Failed to read config file: {}", config_path))?;
-        
+
         // 反序列化用户配置
         let user_config: serde_json::Value = serde_json::from_str(&config_content)
             .with_context(|| format!("Failed to parse config file: {}", config_path))?;
-        
+
         // 将默认配置转换为Value以便合并
         let mut default_config = serde_json::to_value(&session_data.config)?;
-        
+
         // 深度合并配置
         if let Some(user_config) = user_config.get("config") {
             merge_json(&mut default_config, user_config);
         }
-        
+
         // 转换回Config结构体
         session_data.config = serde_json::from_value(default_config)?;
     }
-    
+
     Ok(session_data)
 }
 
@@ -77,29 +77,90 @@ fn merge_json(target: &mut serde_json::Value, source: &serde_json::Value) {
     }
 }
 
-async fn handle_request(session_data: web::Json<SessionData>) -> actix_web::HttpResponse {
+async fn handle_request(
+    app_data: web::Data<SessionData>,
+    request_data: web::Json<serde_json::Value>
+) -> actix_web::HttpResponse {
+    println!("[DEBUG] 接收到的原始数据：{:?}", request_data);
+
     let mut tool_registry = ToolRegistry::new();
     tool_registry.register(FinishTool);
     tool_registry.register(RethinkTool);
 
+    // 使用从 load_config 加载的配置作为基础
+    let mut merged_data = (*app_data.into_inner()).clone();
+
+    // 获取传入数据并检查是否有 config 字段
+    let mut user_data = request_data.into_inner();
+    if !user_data.as_object().unwrap().contains_key("config") {
+        // 如果请求中没有 config 字段，使用 load_config 加载的配置
+        user_data["config"] = serde_json::to_value(&merged_data.config).unwrap();
+    }
+
+    // 将基础配置转换为 JSON Value
+    let mut base_data = match serde_json::to_value(&merged_data) {
+        Ok(v) => v,
+        Err(e) => {
+            return actix_web::HttpResponse::InternalServerError()
+                .content_type("application/json")
+                .body(serde_json::json!({
+                    "messages": [{
+                        "role": "system",
+                        "content": format!("Failed to serialize base config: {}", e)
+                    }]
+                }).to_string());
+        }
+    };
+
+    // 深度合并配置
+    merge_json(&mut base_data, &user_data);
+
+    // 转换回 SessionData 结构体
+    match serde_json::from_value::<SessionData>(base_data) {
+        Ok(v) => merged_data = v,
+        Err(e) => {
+            return actix_web::HttpResponse::BadRequest()
+                .content_type("application/json")
+                .body(serde_json::json!({
+                    "messages": [{
+                        "role": "system",
+                        "content": format!("Invalid request data: {}", e)
+                    }]
+                }).to_string());
+        }
+    };
+
+    println!("[DEBUG] 合并后的数据：{:?}", merged_data);
+
     let client = OpenAIClient::new(
-        session_data.config.llm_api.provider.api_key.to_string(),
-        Some(session_data.config.llm_api.provider.api_url.to_string()),
+        merged_data.config.llm_api.provider.api_key.to_string(),
+        Some(merged_data.config.llm_api.provider.api_url.to_string()),
     );
 
-    match process_session(session_data.into_inner(), &tool_registry, &client).await {
-        Ok(response) => {
-            match serde_json::to_string(&response) {
-                Ok(json) => actix_web::HttpResponse::Ok()
-                    .content_type("application/json")
-                    .body(json),
-                Err(e) => actix_web::HttpResponse::InternalServerError()
-                    .body(format!("Failed to serialize response: {}", e))
-            }
+    match process_session(merged_data, &tool_registry, &client).await {
+        Ok(response) => match serde_json::to_string(&response) {
+            Ok(json) => actix_web::HttpResponse::Ok()
+                .content_type("application/json")
+                .body(json),
+            Err(e) => actix_web::HttpResponse::InternalServerError()
+                .content_type("application/json")
+                .body(serde_json::json!({
+                    "messages": [{
+                        "role": "system",
+                        "content": format!("Failed to serialize response: {}", e)
+                    }]
+                }).to_string()),
         },
         Err(e) => {
             eprintln!("Agent Error: {}", e);
-            actix_web::HttpResponse::InternalServerError().body(e.to_string())
+            actix_web::HttpResponse::InternalServerError()
+                .content_type("application/json")
+                .body(serde_json::json!({
+                    "messages": [{
+                        "role": "system",
+                        "content": e.to_string()
+                    }]
+                }).to_string())
         }
     }
 }
@@ -129,11 +190,13 @@ async fn main() -> std::io::Result<()> {
             session_data.config.llm_api.provider.api_key.to_string(),
             Some(session_data.config.llm_api.provider.api_url.to_string()),
         );
-        
+
         if let Some(cmd) = args.command {
             handle_command(cmd).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         } else {
-            cli::run_interactive(&tool_registry, &client, &session_data).await.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            cli::run_interactive(&tool_registry, &client, &session_data)
+                .await
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         }
         Ok(())
     }

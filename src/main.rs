@@ -3,7 +3,7 @@ mod cli;
 mod core;
 use actix_web::{web, App, HttpServer};
 use agent::{process_session, api::OpenAIClient};
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use core::{session::SessionData, tool::ToolRegistry};
 use agent::tools::finish::FinishTool;
 use agent::tools::rethink::RethinkTool;

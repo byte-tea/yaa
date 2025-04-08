@@ -84,6 +84,19 @@
     return all_session_data.find(session => session.id === session_id);
   }
 
+  // 更新现有会话数据到所有会话数据
+  function update_session_data(session_data) {
+    if (session_data) {
+      const index = all_session_data.findIndex(session => session.id === session_data.id);
+      if (index !== -1) {
+        all_session_data[index] = session_data;
+      } else {
+        all_session_data.push(session_data);
+      }
+    }
+    save_all_session_data();
+  }
+
   // 生成配置数据
   function new_config_data(api_url = 'https://api.deepseek.com', api_key, model_name = 'deepseek-chat') {
     return {
@@ -97,18 +110,6 @@
     }
   }
 
-  // 添加新会话到会话列表
-  function push_session(session_data = null, content = null) {
-    if (session_data == null) {
-      if (content == null) {
-        error('添加新会话到会话列表时未指定消息内容');
-        return;
-      }
-      session_data = new_session_data(content = content);
-    }
-    all_session_data.push(session_data);
-  }
-
   // 添加新消息到会话
   function push_message(role, content, session_id = null) {
     if (session_id == null) {
@@ -118,11 +119,13 @@
       }
       session_id = current_session_id;
     }
-    if (all_session_data.find(session => session.id === session_id)) {
-      all_session_data.find(session => session.id === session_id).messages.push({
+    if (get_session_data(session_id)) {
+      var session_data = get_session_data(session_id);
+      session_data.messages.push({
         'role': role,
         'content': content
       });
+      update_session_data(session_data)
     } else {
       error('添加新消息到会话时未找到会话数据 ID');
       return;
@@ -135,7 +138,7 @@
       error('删除会话时未指定会话数据 ID');
       return;
     }
-    if (all_session_data.find(session => session.id === session_id)) {
+    if (get_session_data(session_id)) {
       all_session_data = all_session_data.filter(session => session.id !== session_id);
       save_all_session_data();
     } else {
@@ -154,6 +157,7 @@
   // 删除显示的消息记录
   function view_delete_messages() {
     current_session_id = null;
+    document.querySelector('.yaa-container .chat-panel .main-title').textContent = '';
     const chatContent = document.querySelector('.yaa-container .chat-panel .content .width-768');
     chatContent.innerHTML = '';
   }
@@ -183,10 +187,10 @@
       error('显示指定会话时未指定会话数据 ID');
       return;
     }
-    if (all_session_data.find(session => session.id === session_id)) {
-      const chatContent = document.querySelector('.yaa-container .chat-panel .content .width-768');
-      chatContent.innerHTML = '';
-      const session = all_session_data.find(session => session.id === session_id);
+    if (get_session_data(session_id)) {
+      document.querySelector('.yaa-container .chat-panel .content .width-768').innerHTML = '';
+      const session = get_session_data(session_id);
+      document.querySelector('.yaa-container .chat-panel .main-title').textContent = session.title;
       for (let i = 0; i < session.messages.length; i++) {
         const role = session.messages[i].role;
         const content = session.messages[i].content;
@@ -314,14 +318,16 @@
     }
     var session_id = null;
     if (current_session_id == null) {
+      view_delete_messages()
       const session_data = new_session_data(content = input.value, title = input.value);
       current_session_id = session_data.id;
       session_id = session_data.id;
-      push_session(session_data);
+      update_session_data(session_data);
       view_push_session(session_id = session_data.id, session_data.title, session_data.startTime, input.value);
     } else {
       session_id = current_session_id;
     }
+    input.value = '';
     try {
       const response = await fetch(yaa_api, {
         method: 'POST',
@@ -330,7 +336,9 @@
       });
       const data = await response.json();
       if (data.finish_reason == 'waiting_feedback' || data.finish_reason == 'interrupted') {
-        all_session_data.find(session => session.id === session_id).status = 'interrupted';
+        var session_data = get_session_data(session_id);
+        session_data.status = 'interrupted';
+        update_session_data(session_data)
       }
       for (var i = 0; i < data.messages.length; ++i) {
         const role = data.messages[i].role;

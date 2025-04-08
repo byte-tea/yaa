@@ -49,23 +49,30 @@ pub async fn process_session(
     loop {
         // 当状态为“已中断”时，很可能是用户授权工具调用，直接跳到工具解析
         if matches!(session_data.status, SessionStatus::InProgress) {
-            // 1. 提示词生成（仅有一条消息且只有当最后一条消息是 user 的时才调用）
-            if let Some(last_msg) = session_data.messages.last() {
-                if matches!(last_msg.role, Role::User) {
-                    if session_data.messages.len() == 1 {
-                        let prompt = PromptGenerator::generate_with_current_time(
-                            &last_msg.content,
-                            &session_data.character,
-                            &get_tools_info(tool_registry)[..],
-                            &session_data
-                                .config
-                                .yaa
-                                .language
-                                .as_deref()
-                                .unwrap_or("zh-CN"),
-                        );
-                        session_data.add_message(Role::System, prompt);
-                    }
+            // 1. 提示词生成
+            if let Some(first_msg) = session_data.messages.first() {
+                let prompt = PromptGenerator::generate_with_current_time(
+                    &first_msg.content,
+                    &session_data.character,
+                    &get_tools_info(tool_registry)[..],
+                    &session_data
+                        .config
+                        .yaa
+                        .language
+                        .as_deref()
+                        .unwrap_or("zh-CN"),
+                );
+                // 将提示词插入到第一个消息之后
+                if session_data.messages.len() > 1 {
+                    session_data.messages.insert(
+                        1,
+                        Message {
+                            role: Role::System,
+                            content: prompt,
+                        },
+                    );
+                } else {
+                    session_data.add_message(Role::System, prompt);
                 }
             }
 
@@ -243,7 +250,7 @@ fn get_tools_info(tool_registry: &ToolRegistry) -> Vec<prompt::ToolInfo> {
         .collect()
 }
 
-/// 获取响应消息（最后一条用户消息之后的所有消息）
+/// 获取响应消息（从第三条消息开始，最后一条用户消息之后的所有消息）
 fn get_response_messages(session_data: &SessionData) -> Vec<Message> {
     let last_user_idx = session_data
         .messages
@@ -251,5 +258,17 @@ fn get_response_messages(session_data: &SessionData) -> Vec<Message> {
         .rposition(|m| matches!(m.role, Role::User))
         .unwrap_or(0);
 
-    session_data.messages[last_user_idx + 1..].to_vec()
+    // 如果最后一条用户消息位置小于等于二，则从第三条消息开始
+    let start_idx = if last_user_idx <= 2 {
+        2
+    } else {
+        last_user_idx + 1
+    };
+
+    // 确保 start_idx 不超过消息总数
+    if start_idx >= session_data.messages.len() {
+        return Vec::new();
+    }
+
+    session_data.messages[start_idx..].to_vec()
 }

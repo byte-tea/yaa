@@ -7,7 +7,7 @@ use agent::tools::rethink::RethinkTool;
 use agent::{api::OpenAIClient, process_session};
 use clap::Parser;
 use cli::commands::{Commands, handle_command};
-use core::{session::{SessionData, Config}, tool::ToolRegistry};
+use core::{session::SessionData, tool::ToolRegistry};
 use tokio;
 
 use anyhow::{Context, Result};
@@ -79,9 +79,10 @@ fn merge_json(target: &mut serde_json::Value, source: &serde_json::Value) {
 
 async fn handle_request(
     app_data: web::Data<SessionData>,
-    request_data: web::Json<serde_json::Value>
+    request_data: web::Json<serde_json::Value>,
 ) -> actix_web::HttpResponse {
-    println!("[DEBUG] 接收到的原始数据：{:?}", request_data);
+    println!("[DEBUG] 接收到的原始数据：{:?}\n", request_data);
+    println!("[DEBUG] 初始SessionData：{:#?}\n", app_data);
 
     let mut tool_registry = ToolRegistry::new();
     tool_registry.register(FinishTool);
@@ -96,6 +97,7 @@ async fn handle_request(
         // 如果请求中没有 config 字段，使用 load_config 加载的配置
         user_data["config"] = serde_json::to_value(&merged_data.config).unwrap();
     }
+    println!("[DEBUG] 处理后的SessionData：{:#?}\n", merged_data);
 
     // 将基础配置转换为 JSON Value
     let mut base_data = match serde_json::to_value(&merged_data) {
@@ -103,12 +105,15 @@ async fn handle_request(
         Err(e) => {
             return actix_web::HttpResponse::InternalServerError()
                 .content_type("application/json")
-                .body(serde_json::json!({
-                    "messages": [{
-                        "role": "system",
-                        "content": format!("Failed to serialize base config: {}", e)
-                    }]
-                }).to_string());
+                .body(
+                    serde_json::json!({
+                        "messages": [{
+                            "role": "system",
+                            "content": format!("Failed to serialize base config: {}", e)
+                        }]
+                    })
+                    .to_string(),
+                );
         }
     };
 
@@ -121,16 +126,19 @@ async fn handle_request(
         Err(e) => {
             return actix_web::HttpResponse::BadRequest()
                 .content_type("application/json")
-                .body(serde_json::json!({
-                    "messages": [{
-                        "role": "system",
-                        "content": format!("Invalid request data: {}", e)
-                    }]
-                }).to_string());
+                .body(
+                    serde_json::json!({
+                        "messages": [{
+                            "role": "system",
+                            "content": format!("Invalid request data: {}", e)
+                        }]
+                    })
+                    .to_string(),
+                );
         }
     };
 
-    println!("[DEBUG] 合并后的数据：{:?}", merged_data);
+    println!("[DEBUG] 合并后的数据：{:?}\n", merged_data);
 
     let client = OpenAIClient::new(
         merged_data.config.llm_api.provider.api_key.to_string(),
@@ -144,23 +152,29 @@ async fn handle_request(
                 .body(json),
             Err(e) => actix_web::HttpResponse::InternalServerError()
                 .content_type("application/json")
-                .body(serde_json::json!({
-                    "messages": [{
-                        "role": "system",
-                        "content": format!("Failed to serialize response: {}", e)
-                    }]
-                }).to_string()),
+                .body(
+                    serde_json::json!({
+                        "messages": [{
+                            "role": "system",
+                            "content": format!("Failed to serialize response: {}", e)
+                        }]
+                    })
+                    .to_string(),
+                ),
         },
         Err(e) => {
             eprintln!("Agent Error: {}", e);
             actix_web::HttpResponse::InternalServerError()
                 .content_type("application/json")
-                .body(serde_json::json!({
-                    "messages": [{
-                        "role": "system",
-                        "content": e.to_string()
-                    }]
-                }).to_string())
+                .body(
+                    serde_json::json!({
+                        "messages": [{
+                            "role": "system",
+                            "content": e.to_string()
+                        }]
+                    })
+                    .to_string(),
+                )
         }
     }
 }

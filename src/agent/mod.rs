@@ -34,6 +34,7 @@ pub async fn process_session(
     tool_registry: &ToolRegistry,
     llm_client: &OpenAIClient,
 ) -> Result<AgentResponseData, AgentError> {
+    let mut error_count = 0;
     // 检查会话状态
     if matches!(session_data.status, SessionStatus::Completed) {
         return Err(AgentError::InvalidSessionState);
@@ -47,6 +48,13 @@ pub async fn process_session(
         .ok_or(AgentError::NoUserMessage)?;
 
     loop {
+        if error_count > 16 {
+            session_data.add_message(
+                Role::System,
+                "[警告]连续多次调用工具失败，请检查你的工具调用是否正确！",
+            );
+            break;
+        }
         // 当状态为“已中断”时，很可能是用户授权工具调用，直接跳到工具解析
         if matches!(session_data.status, SessionStatus::InProgress) {
             // 1. 提示词生成
@@ -137,6 +145,7 @@ pub async fn process_session(
             }
             None => {
                 session_data.add_message(Role::System, "[警告]每次回复至少调用一个工具！");
+                error_count += 1;
                 continue;
             }
         };
@@ -147,6 +156,7 @@ pub async fn process_session(
                 Role::System,
                 &format!("[警告]工具\"{}\"不存在！", tool_name),
             );
+            error_count += 1;
             continue;
         }
 

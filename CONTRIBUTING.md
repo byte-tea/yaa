@@ -29,7 +29,14 @@
 
 ## 测试
 
-运行 `cargo test` 命令，确保所有测试通过。
+- 运行 `cargo check` 命令，确保没有代码格式错误。
+- 运行 `cargo test` 命令，确保所有测试用例通过。
+- 运行 `cargo run` 命令以测试命令行交互模式：
+- 运行 `cargo run --serve` 命令，可通过以下命令测试服务模式：
+
+  ```bash
+  curl -v -X POST -H "Authorization: YAA-API-KEY yaa" -H "Content-Type: application/json" -d '{ "id": "12345", "title": "测试会话", "startTime": "2025-04-07T12:00:00Z", "character": "测试角色", "status": "in-progress", "messages": [{ "role": "user", "content": "测试消息" }] }' http://127.0.0.1:12345
+  ```
 
 ## 编译
 

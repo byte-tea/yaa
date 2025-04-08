@@ -49,21 +49,23 @@ pub async fn process_session(
     loop {
         // 当状态为“已中断”时，很可能是用户授权工具调用，直接跳到工具解析
         if matches!(session_data.status, SessionStatus::InProgress) {
-            // 1. 提示词生成（只有当最后一条消息是 user 的时才调用）
+            // 1. 提示词生成（仅有一条消息且只有当最后一条消息是 user 的时才调用）
             if let Some(last_msg) = session_data.messages.last() {
                 if matches!(last_msg.role, Role::User) {
-                    let prompt = PromptGenerator::generate_with_current_time(
-                        &last_msg.content,
-                        &session_data.character,
-                        &get_tools_info(tool_registry)[..],
-                        &session_data
-                            .config
-                            .yaa
-                            .language
-                            .as_deref()
-                            .unwrap_or("zh-CN"),
-                    );
-                    session_data.add_message(Role::System, prompt);
+                    if session_data.messages.len() == 1 {
+                        let prompt = PromptGenerator::generate_with_current_time(
+                            &last_msg.content,
+                            &session_data.character,
+                            &get_tools_info(tool_registry)[..],
+                            &session_data
+                                .config
+                                .yaa
+                                .language
+                                .as_deref()
+                                .unwrap_or("zh-CN"),
+                        );
+                        session_data.add_message(Role::System, prompt);
+                    }
                 }
             }
 

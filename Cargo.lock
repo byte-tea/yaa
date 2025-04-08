@@ -2433,7 +2433,7 @@ checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
 
 [[package]]
 name = "yaa"
-version = "2.5.0"
+version = "2.5.1"
 dependencies = [
  "actix-web",
  "anyhow",

@@ -344,12 +344,13 @@
     if (current_session_id == null) {
       view_delete_messages()
       const session_data = new_session_data(content = input.value, title = input.value);
+      view_push_message(role = 'user', marked_content = input.value);
+      document.querySelector('.yaa-container .chat-panel .main-title').textContent = input.value;
       current_session_id = session_data.id;
       session_id = session_data.id;
       dealing_with(session_id);
       update_session_data(session_data);
       view_push_session(session_id = session_data.id, session_data.title, session_data.startTime, input.value);
-      document.querySelector('.yaa-container .chat-panel .main-title').textContent = session_data.title;
     } else {
       session_id = current_session_id;
       if (is_dealing_with(session_id)) {

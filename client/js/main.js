@@ -163,6 +163,20 @@
     view_delete_messages();
   }
 
+  // 显示当前设置
+  function view_display_config() {
+    const configContainer = document.querySelector('.yaa-container .sett-panel .sett-block');
+
+    configContainer.querySelector('.yaa-api').value = yaa_api;
+    configContainer.querySelector('.yaa-api-key').value = yaa_api_key;
+    configContainer.querySelector('.yaa-character').value = yaa_character;
+    if (current_config) {
+      configContainer.querySelector('.api-url').value = current_config.llm_api.provider.api_url;
+      configContainer.querySelector('.api-key').value = current_config.llm_api.provider.api_key;
+      configContainer.querySelector('.model-name').value = current_config.llm_api.provider.model_name;
+    }
+  }
+
   // 显示指定会话
   function view_switch_session(session_id) {
     if (!session_id) {
@@ -267,12 +281,12 @@
       return;
     }
     // 获取设置面板输入值
-    const yaaApiInput = document.querySelector('.yaa-api').value;
-    const yaaApiKeyInput = document.querySelector('.yaa-api-key').value;
-    const yaaCharacterInput = document.querySelector('.yaa-character').value;
-    const llmApiUrl = document.querySelector('.api-url').value;
-    const llmApiKey = document.querySelector('.api-key').value;
-    const model = document.querySelector('.model-name').value;
+    const yaaApiInput = settingsPanel.querySelector('.yaa-api').value;
+    const yaaApiKeyInput = settingsPanel.querySelector('.yaa-api-key').value;
+    const yaaCharacterInput = settingsPanel.querySelector('.yaa-character').value;
+    const llmApiUrl = settingsPanel.querySelector('.api-url').value;
+    const llmApiKey = settingsPanel.querySelector('.api-key').value;
+    const model = settingsPanel.querySelector('.model-name').value;
 
     // 应用新配置
     current_config = new_config_data(llmApiUrl, llmApiKey, model);
@@ -339,6 +353,7 @@
   function initialize() {
     load_config_data();
     load_all_session_data();
+    view_display_config()
   }
 
   // 点击事件委托

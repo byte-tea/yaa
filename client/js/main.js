@@ -329,6 +329,9 @@
         body: JSON.stringify(get_session_data(session_id))
       });
       const data = await response.json();
+      if (data.finish_reason == 'waiting_feedback' || data.finish_reason == 'interrupted') {
+        all_session_data.find(session => session.id === session_id).status = 'interrupted';
+      }
       for (var i = 0; i < data.messages.length; ++i) {
         const role = data.messages[i].role;
         const content = data.messages[i].content;

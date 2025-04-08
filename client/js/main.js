@@ -5,6 +5,30 @@
   var yaa_api_key = '';
   var yaa_character = "你是一个叫 yaa 的智能体。";
   var all_session_data = [];
+  var dealing_with_id = [];
+
+  // 检查处理列表
+  function is_dealing_with(session_id) {
+    return dealing_with_id.includes(session_id);
+  }
+
+  // 加入处理列表
+  function dealing_with(session_id) {
+    if (!is_dealing_with(session_id)) {
+      dealing_with_id.push(session_id);
+    } else {
+      console.warn('加入处理列表时会话数据 ID 已存在：', session_id);
+    }
+  }
+
+  // 离开处理列表
+  function stop_dealing_with(session_id) {
+    if (is_dealing_with(session_id)) {
+      dealing_with_id = dealing_with_id.filter(id => id !== session_id);
+    } else {
+      console.warn('离开处理列表时会话数据 ID 不存在：', session_id);
+    }
+  }
 
   // 载入所有会话数据
   function load_all_session_data() {
@@ -322,10 +346,17 @@
       const session_data = new_session_data(content = input.value, title = input.value);
       current_session_id = session_data.id;
       session_id = session_data.id;
+      dealing_with(session_id);
       update_session_data(session_data);
       view_push_session(session_id = session_data.id, session_data.title, session_data.startTime, input.value);
+      document.querySelector('.yaa-container .chat-panel .main-title').textContent = session_data.title;
     } else {
       session_id = current_session_id;
+      if (is_dealing_with(session_id)) {
+        // error('当前会话正在处理中，请稍后再试');
+        return;
+      }
+      dealing_with(session_id);
     }
     input.value = '';
     try {
@@ -357,6 +388,7 @@
       error('解析消息时出错：' + e);
     }
     save_all_session_data()
+    stop_dealing_with(session_id);
   }
 
   // 错误信息处理

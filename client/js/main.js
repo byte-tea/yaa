@@ -343,7 +343,12 @@
       for (var i = 0; i < data.messages.length; ++i) {
         const role = data.messages[i].role;
         const content = data.messages[i].content;
-        push_message(role, content);
+        var session_data = get_session_data(session_id);
+        session_data.messages.push({
+          'role': role,
+          'content': content
+        });
+        update_session_data(session_data)
         if (session_id == current_session_id) {
           view_push_message(role, marked.parse(content));
         }

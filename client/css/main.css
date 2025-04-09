@@ -283,7 +283,8 @@ body {
   padding: 1rem;
 }
 
-.yaa-container .sett-panel .sett-block .btn-clear-data:hover {
+.yaa-container .sett-panel .sett-block .btn-clear.data:hover,
+.yaa-container .sett-panel .sett-block .btn-clear.sessions:hover {
   background-color: var(--decline-color);
 }
 
@@ -352,6 +353,7 @@ body {
 
 .yaa-container .chat-panel .input .buttons {
   display: flex;
+  justify-content: space-between;
   flex-direction: column-reverse;
   gap: .5rem;
 }

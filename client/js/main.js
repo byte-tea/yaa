@@ -503,6 +503,11 @@
     throw new Error(message);
   }
 
+  // 初始化 mermaid 图表
+  function initialize_mermaid() {
+    mermaid.init({ noteMargin: 10 }, '.language-mermaid');
+  }
+
   // 初始化
   function initialize() {
     load_configs();
@@ -510,6 +515,7 @@
     load_view_config();
     view_apply_view_config();
     view_display_config();
+    initialize_mermaid();
     if (all_session_data.length > 0) {
       to_session(all_session_data[all_session_data.length - 1]);
     } else {
@@ -569,9 +575,13 @@
       // TODO
     } else if (event.target.closest('.yaa-container .sett-panel .header .upload-settings')) {
       // TODO
-    } else if (event.target.closest('.yaa-container .sett-panel .sett-block .btn-clear-data')) {
+    } else if (event.target.closest('.yaa-container .sett-panel .sett-block .btn-clear.data')) {
       if (confirm('确认要清空所有数据？')) {
         reset_all_data();
+      }
+    } else if (event.target.closest('.yaa-container .sett-panel .sett-block .btn-clear.sessions')) {
+      if (confirm('确认要清空所有会话？')) {
+        // TODO
       }
     }
   });

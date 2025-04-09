@@ -99,13 +99,20 @@
           'role': 'user',
           'content': content
         }
-      ]
+      ],
+      'config': current_config
     }
   }
 
   // 取现有会话数据
   function get_session_data(session_id) {
-    return all_session_data.find(session => session.id === session_id);
+    const index = all_session_data.findIndex(session => session.id === session_id);
+    if (index !== -1) {
+      return all_session_data[index];
+    } else {
+      error('取现有会话数据时未找到会话数据');
+      return null;
+    }
   }
 
   // 更新现有会话数据到所有会话数据
@@ -113,8 +120,10 @@
     if (session_data) {
       const index = all_session_data.findIndex(session => session.id === session_data.id);
       if (index !== -1) {
+        // 如果找到，则更新会话数据
         all_session_data[index] = session_data;
       } else {
+        // 如果未找到，则添加会话数据
         all_session_data.push(session_data);
       }
     }
@@ -340,60 +349,72 @@
     if (input.value.trim() === '') {
       return;
     }
+    view_push_message(role = 'user', marked_content = input.value);
     var session_id = null;
+    var session_data = null;
+    // 判断是否从新会话发送消息
     if (current_session_id == null) {
+      // 如果当前页面没显示会话（是从新建会话发送消息的）
       view_delete_messages()
-      const session_data = new_session_data(content = input.value, title = input.value);
-      view_push_message(role = 'user', marked_content = input.value);
+      session_data = new_session_data(content = input.value, title = input.value);
       document.querySelector('.yaa-container .chat-panel .main-title').textContent = input.value;
       current_session_id = session_data.id;
       session_id = session_data.id;
+      // 标记当前会话正在处理中
       dealing_with(session_id);
       update_session_data(session_data);
       view_push_session(session_id = session_data.id, session_data.title, session_data.startTime, input.value);
     } else {
+      // 如果当前页面显示会话（是从会话列表发送消息的）
       session_id = current_session_id;
       if (is_dealing_with(session_id)) {
-        // error('当前会话正在处理中，请稍后再试');
+        error('当前会话正在处理中，请稍后再试');
         return;
       }
+      if (get_session_data(session_id)) {
+        session_data = get_session_data(session_id);
+      } else {
+        error('当前会话数据不存在');
+        return;
+      }
+      // 标记当前会话正在处理中
       dealing_with(session_id);
+      // 更新会话数据
+      session_data.messages.push({
+        'role': 'user',
+        'content': input.value
+      });
     }
     input.value = '';
     try {
-      var session_data = get_session_data(session_id);
-      const request_data = {
-        ...session_data,
-        timestamp: Date.now(),
-        config: current_config
-      };
+      // 发送请求
       const response = await fetch(yaa_api, {
         method: 'POST',
         headers: { 'Authorization': 'YAA-API-KEY ' + yaa_api_key, 'Content-Type': 'application/json' },
-        body: JSON.stringify(request_data)
+        body: JSON.stringify(session_data)
       });
       const data = await response.json();
+      // 更新会话数据的状态
       if (data.finish_reason == 'waiting_feedback' || data.finish_reason == 'interrupted') {
         session_data = get_session_data(session_id);
         session_data.status = 'interrupted';
         update_session_data(session_data)
       }
+      // 遍历消息，更新会话数据，并显示消息
       for (var i = 0; i < data.messages.length; ++i) {
-        const role = data.messages[i].role;
-        const content = data.messages[i].content;
-        session_data = get_session_data(session_id);
         session_data.messages.push({
-          'role': role,
-          'content': content
+          'role': data.messages[i].role,
+          'content': data.messages[i].content
         });
         update_session_data(session_data)
         if (session_id == current_session_id) {
-          view_push_message(role, marked.parse(content));
+          view_push_message(data.messages[i].role, marked.parse(data.messages[i].content));
         }
       }
     } catch (e) {
       error('解析消息时出错：' + e);
     } finally {
+      // 标记停止处理会话
       stop_dealing_with(session_id);
     }
   }

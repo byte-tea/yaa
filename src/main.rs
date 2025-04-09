@@ -88,13 +88,14 @@ async fn handle_request(
     tool_registry.register(FinishTool);
     tool_registry.register(RethinkTool);
 
-    // 使用从 load_config 加载的配置作为基础
-    let mut merged_data = (*app_data.into_inner()).clone();
+    // 创建全新的SessionData实例，确保状态隔离
+    let mut merged_data = SessionData::default();
+    merged_data.config = app_data.config.clone(); // 只复制必要的配置部分
 
     // 获取传入数据并检查是否有 config 字段
     let mut user_data = request_data.into_inner();
     if !user_data.as_object().unwrap().contains_key("config") {
-        // 如果请求中没有 config 字段，使用 load_config 加载的配置
+        // 如果请求中没有 config 字段，使用默认配置
         user_data["config"] = serde_json::to_value(&merged_data.config).unwrap();
     }
     println!("[DEBUG] 处理后的SessionData：{:#?}\n", merged_data);

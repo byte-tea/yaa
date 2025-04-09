@@ -354,6 +354,8 @@
     messageDiv.querySelector('.bubble').classList.add(role);
     chatContent.appendChild(messageDiv);
 
+    initialize_mermaid();
+
     // TODO 逻辑有点问题（离底部很远还是会触发）
     const distanceFromBottom = scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight;
     if (distanceFromBottom <= 10) {
@@ -518,6 +520,7 @@
     view_apply_view_config();
     view_display_config();
     initialize_mermaid();
+    console.log(all_session_data.length);
     if (all_session_data.length > 0) {
       to_session(all_session_data[all_session_data.length - 1]);
     } else {

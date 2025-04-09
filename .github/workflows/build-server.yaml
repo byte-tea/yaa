@@ -1,0 +1,99 @@
+name: 编译服务端
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-server.yaml'
+      - 'src/**'
+
+concurrency:
+  group: "server"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-server:
+    name: 编译服务端（${{ matrix.os }}）
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux, macos, windows]
+        include:
+          - build: linux
+            os: ubuntu-latest
+          - build: windows
+            os: windows-latest
+          - build: macos
+            os: macos-latest
+    steps:
+
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 为 ubuntu-latest 安装 Rust
+        if: matrix.os == 'ubuntu-latest'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          target: x86_64-unknown-linux-musl
+
+      - name: 为 windows-latest 安装 Rust
+        if: matrix.os == 'windows-latest'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable-x86_64-msvc
+          target: x86_64-pc-windows-msvc
+
+      - name: 为 macos-latest 安装 Rust
+        if: matrix.os == 'macos-latest'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          target: x86_64-apple-darwin
+
+      - name: 恢复 Rust 缓存
+        uses: actions/cache/restore@v3
+        id: cache_store
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ matrix.os }}-cargo-${{ hashFiles('./Cargo.lock') }}
+
+      - name: 编译服务端
+        run: |
+          cargo build --release
+
+      - name: 收集包
+        run: |
+          mkdir -p yaa_server_${{ matrix.build }}
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            cp target/release/yaa.exe yaa_server_${{ matrix.build }}/
+          else
+            cp target/release/yaa yaa_server_${{ matrix.build }}/
+          fi
+        shell: bash
+
+      - name: 上传包
+        uses: actions/upload-artifact@v4
+        with:
+          name: yaa_server_${{ matrix.os }}.zip
+          path: yaa_server_${{ matrix.build }}/**/*
+          retention-days: 3
+
+      - name: 保存 Rust 缓存
+        uses: actions/cache/save@v3
+        if: steps.cache_store.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ matrix.os }}-cargo-${{ hashFiles('./Cargo.lock') }}

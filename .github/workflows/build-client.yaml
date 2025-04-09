@@ -1,15 +1,14 @@
-name: 编译
+name: 编译客户端
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - '.github/workflows/build-app.yaml'
+      - '.github/workflows/build-client.yaml'
       - 'client/**'
-      - 'src/**'
 
 concurrency:
-  group: "build"
+  group: "client"
   cancel-in-progress: true
 
 permissions:
@@ -35,7 +34,7 @@ jobs:
 
   build-app:
     needs: get-version
-    name: 编译（${{ matrix.os }}）
+    name: 编译客户端（${{ matrix.os }}）
     runs-on: ${{ matrix.os }}
     env:
       HTML_PATH: 'client/index.html'
@@ -111,10 +110,6 @@ jobs:
         run: |
           npm install -g shelljs
           npm install -g axios
-
-      - name: 编译服务端
-        run: |
-          cargo build --release
     
       - name: 编译客户端
         run: |
@@ -132,20 +127,15 @@ jobs:
 
       - name: 收集包
         run: |
-          mkdir -p yaa-${{ matrix.build }}
-          cp -r node_modules/pake-cli/output/* yaa-${{ matrix.build }}
-          if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            cp target/release/yaa.exe yaa-${{ matrix.build }}/
-          else
-            cp target/release/yaa yaa-${{ matrix.build }}/
-          fi
+          mkdir -p yaa_client_${{ matrix.build }}
+          cp -r target/client/* yaa_client_${{ matrix.build }}
         shell: bash
 
       - name: 上传包
         uses: actions/upload-artifact@v4
         with:
-          name: yaa-${{ matrix.os }}.zip
-          path: yaa-${{ matrix.build }}/**/*
+          name: yaa_client_${{ matrix.os }}.zip
+          path: yaa_client_${{ matrix.build }}/**/*
           retention-days: 3
 
       - name: 保存 Rust 缓存

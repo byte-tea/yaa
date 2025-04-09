@@ -12,7 +12,13 @@
 
 ## 快速上手
 
-### 部署
+### 客户端
+
+[查看](client/index.html)
+
+### 服务端
+
+#### 部署
 
 拉取到本地：
 
@@ -32,7 +38,7 @@ cp configs/Config.example.json Config.json
 cp configs/ServerConfig.example.json ServerConfig.json
 ```
 
-### 使用
+#### 使用
 
 以服务模式启动：
 

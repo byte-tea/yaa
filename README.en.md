@@ -12,7 +12,13 @@
 
 ## Quick Start
 
-### Deployment
+### Client
+
+[View](client/index.html)
+
+### Server
+
+#### Deployment
 
 Deploy locally:
 
@@ -32,7 +38,7 @@ cp configs/Config.example.json Config.json
 cp configs/ServerConfig.example.json ServerConfig.json
 ```
 
-### Usage
+#### Usage
 
 Start in server mode:
 

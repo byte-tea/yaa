@@ -18,7 +18,7 @@
 ### 引入图标
 
 1. 在 [tabler icons](https://tabler.io/icons) 中选择合适的图标时，请使用 `.svg` 格式。
-2. 将 `svg` 代码转为 CSS 中的 `background-image:data` 格式并存入 `client/css/icon.css` 文件夹中。
+2. 将 `svg` 代码转为 CSS 中的 `background-image:url(data:..)` 格式并存入 `client/css/icon.css` 文件夹中。
 3. 在 HTML 中引入。
 
 ## 服务端
@@ -30,7 +30,7 @@
 - `智能体（agent）`：智能体核心实现
 - `核心（core）`：基础数据结构与框架
 - `命令行（cli）`：命令行接口
-- `web`：Web 接口
+- `网页（web）`：网页接口
 - `工具（agent/tools）`：智能体工具实现
 
 ### 服务端开发环境配置

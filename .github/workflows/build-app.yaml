@@ -1,4 +1,4 @@
-name: 编译客户端
+name: 编译
 
 on:
   workflow_dispatch:
@@ -6,9 +6,10 @@ on:
     paths:
       - '.github/workflows/build-app.yaml'
       - 'client/**'
+      - 'src/**'
 
 concurrency:
-  group: "client"
+  group: "build"
   cancel-in-progress: true
 
 permissions:
@@ -16,13 +17,28 @@ permissions:
   id-token: write
 
 jobs:
+  get-version:
+    name: 获取版本号
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 获取 yaa 的版本号
+        id: get-version
+        run: |
+          YAA_VERSION=$(grep '^version' ./Cargo.toml | awk -F= '{print $2}' | tr -d '" ')
+          echo "::set-output name=version::$YAA_VERSION"
+
   build-app:
-    name: 编译客户端（${{ matrix.os }}）
+    needs: get-version
+    name: 编译（${{ matrix.os }}）
     runs-on: ${{ matrix.os }}
     env:
-      HTML_PATH: './client/index.html'
+      HTML_PATH: 'client/index.html'
       NAME: 'yaa'
-      ICON: './assets/yaa_512.png'
+      ICON: 'assets/yaa_512.png'
       INSTALLER_LANGUAGE: zh-CN
       TARGETS: 'appimage'
     strategy:
@@ -35,7 +51,6 @@ jobs:
             os: windows-latest
           - build: macos
             os: macos-latest
-
     steps:
 
       - name: 检出仓库
@@ -87,36 +102,52 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            node_modules/pake-cli/src-tauri/target/
-          key: ${{ matrix.os }}-cargo-${{ hashFiles('node_modules/pake-cli/src-tauri/Cargo.lock') }}
+          key: ${{ matrix.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: 安装依赖
         run: |
-          npm install shelljs
-          npm install axios
+          npm install -g shelljs
+          npm install -g axios
+    
+      - name: 安装 Pake
+        run: |
+          npm install -g pake-cli && pake --version
 
+
+      - name: 编译服务端
+        run: |
+          cargo build --release
+    
       - name: 编译客户端
         run: |
-          node ./script/build_with_pake_cli.js
-        env:
-          URL: ${{ env.HTML_PATH }}
-          NAME: ${{ env.NAME }}
-          ICON: ${{ env.ICON }}
-          HEIGHT: '780'
-          WIDTH: '1200'
-          HIDE_TITLE_BAR: false
-          FULLSCREEN: false
-          MULTI_ARCH: false
-          TARGETS: ${{ env.TARGETS }}
-          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig
-          PKG_CONFIG_ALLOW_SYSTEM_LIBS: 1
-          PKG_CONFIG_ALLOW_SYSTEM_CFLAGS: 1
+          mkdir -p target/client
+          cd target/client
+          pake ../../${{ env.HTML_PATH }} \
+            -name ${{ env.NAME }} \
+            --icon ../../${{ env.ICON }} \
+            --installer-language ${{ env.INSTALLER_LANGUAGE }} \
+            --app-version ${{ needs.get-version.outputs.version }}
+            --targets ${{ env.TARGETS }} \
+            --use-local-file
+          cd ../..
+        shell: bash
+
+      - name: 收集包
+        run: |
+          mkdir -p yaa-${{ matrix.build }}
+          cp -r node_modules/pake-cli/output/* yaa-${{ matrix.build }}
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            cp target/release/yaa.exe yaa-${{ matrix.build }}/
+          else
+            cp target/release/yaa yaa-${{ matrix.build }}/
+          fi
+        shell: bash
 
       - name: 上传包
         uses: actions/upload-artifact@v4
         with:
-          name: output-${{ matrix.os }}.zip
-          path: node_modules/pake-cli/output/*
+          name: yaa-${{ matrix.os }}.zip
+          path: yaa-${{ matrix.build }}/**/*
           retention-days: 3
 
       - name: 保存 Rust 缓存
@@ -128,5 +159,4 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            node_modules/pake-cli/src-tauri/target/
-          key: ${{ matrix.os }}-cargo-${{ hashFiles('node_modules/pake-cli/src-tauri/Cargo.lock') }}
+          key: ${{ matrix.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}

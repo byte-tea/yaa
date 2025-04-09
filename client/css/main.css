@@ -212,6 +212,10 @@ body {
   flex-direction: row;
 }
 
+.yaa-container .ctrl-panel .session .session-item.current {
+  background-color: var(--content-color-dark);
+}
+
 .yaa-container.not-max .ctrl-panel .session .session-item {
   flex-direction: column;
 }

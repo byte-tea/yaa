@@ -29,6 +29,7 @@
     localStorage.clear();
     save_all_session_data();
     save_configs();
+    save_view_config();
     initialize();
   }
 
@@ -137,6 +138,9 @@
       const sessionList = document.querySelector('.yaa-container .ctrl-panel .session.list');
       const sessionDiv = document.createElement('div');
       sessionDiv.className = `session-item`;
+      if (session_id === current_session_id) {
+        sessionDiv.classList.add('current');
+      }
       sessionDiv.innerHTML = `
       <div class="session-info">
         <strong>${title}</strong>
@@ -151,7 +155,7 @@
     sessionList.innerHTML = '';
     for (let i = 0; i < all_session_data.length; i++) {
       const session = all_session_data[i];
-      view_push_session(session);
+      view_push_session(session.id, session.title, session.startTime, session.messages[0]?.content || '');
     }
   }
 
@@ -167,11 +171,12 @@
         view_delete_messages();
         // 更新标题
         document.querySelector('.yaa-container .chat-panel .main-title').textContent = session_data.title;
+        // 显示会话列表
         view_display_session_list();
         // 显示消息
-        for (let i = 0; i < session.messages.length; i++) {
-          const role = session.messages[i].role;
-          const content = session.messages[i].content;
+        for (let i = 0; i < session_data.messages.length; i++) {
+          const role = session_data.messages[i].role;
+          const content = session_data.messages[i].content;
           var marked_content = '';
           if (role == 'user') {
             marked_content = content;
@@ -187,21 +192,23 @@
     return session_data;
   }
 
-  // 生成会话数据
-  function new_session_data(content, title = '会话', character = client_config.yaa_character) {
-    var session_data = {
-      'id': Date.now().toString(),
-      'title': title,
-      'startTime': new Date().toISOString(),
-      'character': character,
-      'status': "in-progress",
-      'messages': [
-        {
-          'role': 'user',
-          'content': content
-        }
-      ]
+  // 新会话页面和数据
+  function new_session(title = '会话', character = client_config.yaa_character) {
+    // 生成会话数据
+    function new_session_data(title = '会话', character = client_config.yaa_character) {
+      return {
+        'id': Date.now().toString(),
+        'title': title,
+        'startTime': new Date().toISOString(),
+        'character': character,
+        'status': "in-progress",
+        'messages': []
+      };
     }
+    const session_data = new_session_data(title, character);
+    all_session_data.push(session_data);
+    save_all_session_data();
+    to_session(session_data);
     return session_data;
   }
 
@@ -269,27 +276,7 @@
     }
   }
 
-  // 添加新消息到会话
-  function push_message(role, content, session_id = null) {
-    if (session_id == null) {
-      if (current_session_id == null) {
-        handle_error('添加新消息到会话时未指定会话数据 ID');
-      }
-      session_id = current_session_id;
-    }
-    if (get_session_data(session_id)) {
-      var session_data = get_session_data(session_id);
-      session_data.messages.push({
-        'role': role,
-        'content': content
-      });
-      update_session_data(session_data)
-    } else {
-      handle_error('添加新消息到会话时未找到会话数据 ID');
-    }
-  }
-
-  // 删除会话
+  // 删除会话，更新会话列表，如果删除当前会话，则切换到最后一个会话
   function delete_session(session_id) {
     if (session_id == null) {
       handle_error('删除会话时未指定会话数据 ID');
@@ -297,6 +284,12 @@
     if (get_session_data(session_id)) {
       all_session_data = all_session_data.filter(session => session.id !== session_id);
       save_all_session_data();
+      view_display_session_list();
+      if (all_session_data.length > 0) {
+        to_session(all_session_data[all_session_data.length - 1]);
+      } else {
+        new_session();
+      }
     } else {
       handle_error('删除会话时会话数据 ID 不存在');
     }
@@ -441,7 +434,7 @@
     // 判断是否从新会话发送消息
     if (current_session_id == null) {
       // 如果当前页面没显示会话（是从新建会话发送消息的）
-      session_data = to_session(new_session_data(content = input.value, title = input.value));
+      session_data = new_session(title = input.value);
       // 标记当前会话正在处理中
       dealing_with(session_data.id);
     } else {
@@ -456,19 +449,21 @@
       }
       // 标记当前会话正在处理中
       dealing_with(session_data.id);
-      // 更新会话数据
-      session_data.messages.push({
-        'role': 'user',
-        'content': input.value
-      });
     }
+    // 更新会话数据
+    session_data.messages.push({
+      'role': 'user',
+      'content': input.value
+    });
     view_push_message(role = 'user', marked_content = input.value);
     update_session_data(session_data);
     input.value = '';
     try {
       // 发送请求
       var post_data = session_data;
-      post_data.config = session_config;
+      if (session_config != null) {
+        post_data.config = session_config
+      }
       const response = await fetch(client_config.yaa_api, {
         method: 'POST',
         headers: { 'Authorization': 'YAA-API-KEY ' + client_config.yaa_api_key, 'Content-Type': 'application/json' },
@@ -513,9 +508,13 @@
     load_configs();
     load_all_session_data();
     load_view_config();
-    view_display_config();
-    view_display_session_list();
     view_apply_view_config();
+    view_display_config();
+    if (all_session_data.length > 0) {
+      to_session(all_session_data[all_session_data.length - 1]);
+    } else {
+      new_session();
+    }
   }
 
   // 点击事件委托
@@ -544,7 +543,7 @@
       }
     } else if (sessionItem) {
       const session_id = sessionItem.querySelector('.delete-session-btn').getAttribute('data-id');
-      to_session(new_session_data());
+      to_session(get_session_data(session_id));
     } else if (event.target.closest('.yaa-container .chat-panel .header .maximize')) {
       toggle_maximize();
       update_view_config();
@@ -556,7 +555,7 @@
     } else if (event.target.closest('.yaa-container .chat-panel .input .back-bottom')) {
       to_bottom();
     } else if (event.target.closest('.yaa-container .ctrl-panel .btn-new')) {
-      to_session(get_session_data());
+      new_session();
     } else if (event.target.closest('.yaa-container .ctrl-panel .btn-settings')) {
       toggle_sett_panel();
       update_view_config();
@@ -573,8 +572,6 @@
     } else if (event.target.closest('.yaa-container .sett-panel .sett-block .btn-clear-data')) {
       if (confirm('确认要清空所有数据？')) {
         reset_all_data();
-        view_new_session();
-        view_display_session_list();
       }
     }
   });

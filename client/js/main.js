@@ -362,7 +362,6 @@
       session_id = session_data.id;
       // 标记当前会话正在处理中
       dealing_with(session_id);
-      update_session_data(session_data);
       view_push_session(session_id = session_data.id, session_data.title, session_data.startTime, input.value);
     } else {
       // 如果当前页面显示会话（是从会话列表发送消息的）
@@ -385,6 +384,7 @@
         'content': input.value
       });
     }
+    update_session_data(session_data);
     input.value = '';
     try {
       // 发送请求

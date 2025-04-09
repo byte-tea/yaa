@@ -171,8 +171,6 @@
         view_delete_messages();
         // 更新标题
         document.querySelector('.yaa-container .chat-panel .main-title').textContent = session_data.title;
-        // 显示会话列表
-        view_display_session_list();
         // 显示消息
         for (let i = 0; i < session_data.messages.length; i++) {
           const role = session_data.messages[i].role;
@@ -186,6 +184,8 @@
           view_push_message(role, marked_content);
         }
       }
+      // 显示会话列表
+      view_display_session_list();
     } catch (e) {
       handle_error('切换到会话页面和数据时出错：', e);
     }
@@ -340,6 +340,7 @@
 
   // 显示新消息，如果离底部很近（10px），触发回到底部
   function view_push_message(role, marked_content, model_name = '') {
+    const scrollDiv = document.querySelector('.yaa-container .chat-panel .content');
     const chatContent = document.querySelector('.yaa-container .chat-panel .content .width-768');
     const messageDiv = document.createElement('div');
     messageDiv.className = `object ${role}`;
@@ -353,10 +354,11 @@
     messageDiv.querySelector('.bubble').classList.add(role);
     chatContent.appendChild(messageDiv);
 
-    // const distanceFromBottom = chatContent.scrollHeight - chatContent.scrollTop - chatContent.clientHeight;
-    // if (distanceFromBottom <= 10) {
-    //   to_bottom();
-    // }
+    // TODO 逻辑有点问题（离底部很远还是会触发）
+    const distanceFromBottom = scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight;
+    if (distanceFromBottom <= 10) {
+      to_bottom();
+    }
   }
 
   // 最大化

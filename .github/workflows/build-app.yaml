@@ -31,9 +31,10 @@ jobs:
         id: get-yaa-version
         run: |
           YAA_VERSION=$(grep '^version' ./Cargo.toml | awk -F= '{print $2}' | tr -d '" ')
-          echo "$YAA_VERSION"
+          echo "version=$YAA_VERSION" >> "$GITHUB_OUTPUT"
 
   build-app:
+    needs: get-version
     name: 编译（${{ matrix.os }}）
     runs-on: ${{ matrix.os }}
     env:
@@ -93,7 +94,7 @@ jobs:
       
       - name: 安装 pake-cli
         run: |
-          npm install pake-cli
+          npm install -g pake-cli && pake --version
 
       - name: 恢复 Rust 缓存
         uses: actions/cache/restore@v3
@@ -110,11 +111,6 @@ jobs:
         run: |
           npm install -g shelljs
           npm install -g axios
-    
-      - name: 安装 Pake
-        run: |
-          npm install -g pake-cli && pake --version
-
 
       - name: 编译服务端
         run: |

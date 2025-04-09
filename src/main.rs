@@ -1,6 +1,7 @@
 mod agent;
 mod cli;
 mod core;
+use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use agent::tools::finish::FinishTool;
 use agent::tools::rethink::RethinkTool;
@@ -189,7 +190,19 @@ async fn main() -> std::io::Result<()> {
     if args.serve {
         println!("启动服务监听模式，端口: {}", args.port);
         HttpServer::new(move || {
+            // 配置 CORS 中间件
+            let cors = Cors::default()
+                .allow_any_origin()  // 允许所有来源
+                .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])  // 允许的方法
+                .allowed_headers(vec![
+                    actix_web::http::header::AUTHORIZATION,
+                    actix_web::http::header::ACCEPT,
+                    actix_web::http::header::CONTENT_TYPE,
+                ])  // 允许的请求头
+                .max_age(3600);  // 预检请求缓存时间
+
             App::new()
+                .wrap(cors)  // 应用 CORS 中间件
                 .app_data(web::Data::new(session_data.clone()))
                 .service(web::resource("/").route(web::post().to(handle_request)))
         })

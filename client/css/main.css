@@ -225,11 +225,13 @@ body {
 }
 
 .yaa-container .ctrl-panel .session .session-item .delete-session-btn {
+  display: none;
   width: 1.5rem;
   height: 1.5rem;
 }
 
 .yaa-container .ctrl-panel .session .session-item:hover .delete-session-btn {
+  display: block;
   background-color: var(--decline-color);
 }
 
@@ -240,10 +242,6 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.yaa-container .ctrl-panel .session .session-item .session-item-content {
-  font-size: medium;
 }
 
 .yaa-container .ctrl-panel .btn.list {

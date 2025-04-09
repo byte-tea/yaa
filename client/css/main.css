@@ -61,6 +61,10 @@ select:hover,
   --font-color-light: #FAFAFA;
   --font-color-midium: #CCCCCC;
   --font-color-dark: #212121;
+  --message-color: #FAFDFF;
+  --system-message-color: #FFFAFA;
+  --accept-color: #A1C58A;
+  --decline-color: #FF6B6B;
   /* 侧栏宽 */
   --ctrl-panel-width: 15rem;
   --sett-panel-width: 20rem;
@@ -135,6 +139,9 @@ body {
 .yaa-container .panel .header {
   height: var(--header-height);
   display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   justify-content: space-between;
   text-align: center;
   align-items: center;
@@ -220,11 +227,10 @@ body {
 .yaa-container .ctrl-panel .session .session-item .delete-session-btn {
   width: 1.5rem;
   height: 1.5rem;
-  background-color: #FF6B6B;
 }
 
-.yaa-container .ctrl-panel .session .session-item .delete-session-btn:hover {
-  background-color: #FF5252;
+.yaa-container .ctrl-panel .session .session-item:hover .delete-session-btn {
+  background-color: var(--decline-color);
 }
 
 .yaa-container .ctrl-panel .session .session-item .session-item-content,
@@ -265,10 +271,18 @@ body {
   font-weight: bolder;
 }
 
+.yaa-container .sett-panel .header .save-settings:hover {
+  background-color: var(--accept-color);
+}
+
 .yaa-container .sett-panel .sett-block {
   overflow-y: scroll;
   overflow-x: clip;
   padding: 1rem;
+}
+
+.yaa-container .sett-panel .sett-block .btn-clear-data:hover {
+  background-color: var(--decline-color);
 }
 
 .yaa-container .sett-panel .sett-block>*:first-child {
@@ -371,7 +385,7 @@ body {
   min-width: 2rem;
   height: 2rem;
   background-size: cover;
-  background-color: #FAFDFF;
+  background-color: var(--message-color);
   border-radius: 50%;
   box-shadow: 0 0 200px rgba(0, 0, 0, .2);
 }
@@ -383,7 +397,7 @@ body {
   padding: 1rem;
   word-wrap: break-word;
   word-break: normal;
-  background-color: #FAFDFF;
+  background-color: var(--message-color);
   box-shadow: 0 0 200px rgba(0, 0, 0, .2);
 }
 
@@ -393,5 +407,5 @@ body {
 
 .yaa-container .chat-panel .content .object.system .avatar,
 .yaa-container .chat-panel .content .object.system .bubble {
-  background-color: #FFFAFA;
+  background-color: var(--system-message-color);
 }

@@ -361,21 +361,27 @@
     }
     input.value = '';
     try {
+      var session_data = get_session_data(session_id);
+      const request_data = {
+        ...session_data,
+        timestamp: Date.now(),
+        config: current_config
+      };
       const response = await fetch(yaa_api, {
         method: 'POST',
-        headers: { 'Authorzation': 'YAA-API-KEY ' + yaa_api_key, 'Content-Type': 'application/json' },
-        body: JSON.stringify(get_session_data(session_id))
+        headers: { 'Authorization': 'YAA-API-KEY ' + yaa_api_key, 'Content-Type': 'application/json' },
+        body: JSON.stringify(request_data)
       });
       const data = await response.json();
       if (data.finish_reason == 'waiting_feedback' || data.finish_reason == 'interrupted') {
-        var session_data = get_session_data(session_id);
+        session_data = get_session_data(session_id);
         session_data.status = 'interrupted';
         update_session_data(session_data)
       }
       for (var i = 0; i < data.messages.length; ++i) {
         const role = data.messages[i].role;
         const content = data.messages[i].content;
-        var session_data = get_session_data(session_id);
+        session_data = get_session_data(session_id);
         session_data.messages.push({
           'role': role,
           'content': content
@@ -387,9 +393,9 @@
       }
     } catch (e) {
       error('解析消息时出错：' + e);
+    } finally {
+      stop_dealing_with(session_id);
     }
-    save_all_session_data()
-    stop_dealing_with(session_id);
   }
 
   // 错误信息处理

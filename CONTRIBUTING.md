@@ -9,6 +9,20 @@
 
 提交信息应遵循 [PJ568 提交说明规范](https://github.com/PJ-568/git-commit-regulation)。
 
+## 客户端
+
+### 客户端代码格式
+
+1. 使用两个空格缩进。
+
+### 引入图标
+
+1. 在 [tabler icons](https://tabler.io/icons) 中选择合适的图标时，请使用 `.svg` 格式。
+2. 将 `svg` 代码转为 CSS 中的 `background-image:data` 格式并存入 `client/css/icon.css` 文件夹中。
+3. 在 HTML 中引入。
+
+## 服务端
+
 ### 范围
 
 项目当前定义的范围如下：
@@ -19,7 +33,7 @@
 - `web`：Web 接口
 - `工具（agent/tools）`：智能体工具实现
 
-## 环境配置
+### 服务端开发环境配置
 
 1. 安装 cargo 和 Rust。
 2. 配置 cargo 镜像源（可选）。
@@ -27,7 +41,7 @@
 
    - 安装 rust-analyzer 扩展。
 
-## 测试
+### 服务端测试
 
 - 运行 `cargo check` 命令，确保没有代码格式错误。
 - 运行 `cargo test` 命令，确保所有测试用例通过。
@@ -38,7 +52,7 @@
   curl -v -X POST -H "Authorization: YAA-API-KEY yaa" -H "Content-Type: application/json" -d '{ "id": "12345", "title": "测试会话", "startTime": "2025-04-07T12:00:00Z", "character": "测试角色", "status": "in-progress", "messages": [{ "role": "user", "content": "测试消息" }] }' http://127.0.0.1:12345
   ```
 
-## 编译
+### 服务端编译
 
 - 运行 `cargo build` 命令以编译 Debug 版本的二进制文件。
 - 运行 `cargo build --release` 命令以编译更小更快的发行版本的二进制文件。

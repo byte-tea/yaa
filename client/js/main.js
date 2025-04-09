@@ -87,8 +87,8 @@
   }
 
   // 生成会话数据
-  function new_session_data(content, title = '', character = yaa_character) {
-    return {
+  function new_session_data(content, title = '', character = yaa_character, config = current_config) {
+    var session_data = {
       'id': Date.now().toString(),
       'title': title,
       'startTime': new Date().toISOString(),
@@ -99,9 +99,12 @@
           'role': 'user',
           'content': content
         }
-      ],
-      'config': current_config
+      ]
     }
+    if (config) {
+      session_data.config = config;
+    }
+    return session_data;
   }
 
   // 取现有会话数据
@@ -394,6 +397,7 @@
         body: JSON.stringify(session_data)
       });
       const data = await response.json();
+      console.log('请求回应：', data.messages);
       // 更新会话数据的状态
       if (data.finish_reason == 'waiting_feedback' || data.finish_reason == 'interrupted') {
         session_data = get_session_data(session_id);

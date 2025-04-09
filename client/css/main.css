@@ -229,6 +229,7 @@ body {
 
 .yaa-container .ctrl-panel .session .session-item .session-item-content,
 .yaa-container .ctrl-panel .session .session-item .session-item-time {
+  font-size: small;
   color: var(--font-color-midium);
   white-space: nowrap;
   overflow: hidden;
@@ -237,10 +238,6 @@ body {
 
 .yaa-container .ctrl-panel .session .session-item .session-item-content {
   font-size: medium;
-}
-
-.yaa-container .ctrl-panel .session .session-item .session-item-time {
-  font-size: small;
 }
 
 .yaa-container .ctrl-panel .btn.list {

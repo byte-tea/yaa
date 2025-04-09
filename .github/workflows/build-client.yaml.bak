@@ -40,6 +40,7 @@ jobs:
       HTML_PATH: 'client/index.html'
       NAME: 'yaa'
       ICON: 'assets/yaa_512.png'
+      INJECT: 'assets/fix-cors.js'
       INSTALLER_LANGUAGE: zh-CN
       VERSION: ${{ needs.get-version.outputs.VERSION }}
       TARGETS: 'appimage'
@@ -119,6 +120,7 @@ jobs:
             --name ${{ env.NAME }} \
             --icon ../../${{ env.ICON }} \
             --installer-language ${{ env.INSTALLER_LANGUAGE }} \
+            --inject ../.. ${{ env.INJECT }} \
             --app-version ${{ env.VERSION }} \
             --targets ${{ env.TARGETS }} \
             --use-local-file

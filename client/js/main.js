@@ -1,11 +1,23 @@
 (function () {
+  // 当前页面上的当前会话数据 ID
   var current_session_id = null;
-  var current_config = null;
-  var yaa_api = 'http://127.0.0.1:12345';
-  var yaa_api_key = '';
-  var yaa_character = "你是一个叫 yaa 的智能体。";
+  // 会话配置
+  var session_config = null;
+  var client_config = new_client_config();
+  var view_config = new_view_config();
   var all_session_data = [];
   var dealing_with_id = [];
+
+  // 清除数据
+  function reset_all_data() {
+    current_session_id = null;
+    session_config = null;
+    client_config = new_client_config();
+    all_session_data = [];
+    dealing_with_id = [];
+    save_all_session_data();
+    save_configs();
+  }
 
   // 检查处理列表
   function is_dealing_with(session_id) {
@@ -36,7 +48,7 @@
       const saved = localStorage.getItem('all_session_data');
       all_session_data = saved ? JSON.parse(saved) : [];
     } catch (error) {
-      error('载入所有会话数据时出错：', error);
+      handle_error('载入所有会话数据时出错：', error);
     }
   }
 
@@ -44,50 +56,36 @@
   function save_all_session_data() {
     try {
       localStorage.setItem('all_session_data', JSON.stringify(all_session_data));
-    } catch (error) {
-      error('保存所有会话数据时出错：', error);
+    } catch (e) {
+      handle_error('保存所有会话数据时出错：', e);
     }
   }
 
   // 载入设置数据
-  function load_config_data() {
+  function load_configs() {
     try {
-      const savedConfig = localStorage.getItem('config_data');
-      current_config = savedConfig ? JSON.parse(savedConfig) : null;
+      const savedConfig = localStorage.getItem('session_config');
+      session_config = savedConfig ? JSON.parse(savedConfig) : null;
 
-      const yaaApi = localStorage.getItem('yaa_api');
-      if (yaaApi) {
-        yaa_api = yaaApi;
-      }
-
-      const yaaApiKey = localStorage.getItem('yaa_api_key');
-      if (yaaApiKey) {
-        yaa_api_key = yaaApiKey;
-      }
-
-      const yaaCharacter = localStorage.getItem('yaa_character');
-      if (yaaCharacter) {
-        yaa_character = yaaCharacter;
-      }
-    } catch (error) {
-      error('载入所有会话数据时出错：', error);
+      const clientConfig = localStorage.getItem('client_config');
+      client_config = clientConfig ? JSON.parse(clientConfig) : new_client_config();
+    } catch (e) {
+      handle_error('载入所有会话数据时出错：', e);
     }
   }
 
   // 保存设置数据
-  function save_config_data() {
+  function save_configs() {
     try {
-      localStorage.setItem('config_data', JSON.stringify(current_config));
-      localStorage.setItem('yaa_api', yaa_api);
-      localStorage.setItem('yaa_api_key', yaa_api_key);
-      localStorage.setItem('yaa_character', yaa_character);
-    } catch (error) {
-      error('保存设置数据时出错：', error);
+      localStorage.setItem('session_config', JSON.stringify(session_config));
+      localStorage.setItem('client_config', JSON.stringify(client_config));
+    } catch (e) {
+      handle_error('保存设置数据时出错：', e);
     }
   }
 
   // 生成会话数据
-  function new_session_data(content, title = '', character = yaa_character, config = current_config) {
+  function new_session_data(content, title = '', character = client_config.yaa_character) {
     var session_data = {
       'id': Date.now().toString(),
       'title': title,
@@ -101,9 +99,6 @@
         }
       ]
     }
-    if (config) {
-      session_data.config = config;
-    }
     return session_data;
   }
 
@@ -113,7 +108,7 @@
     if (index !== -1) {
       return all_session_data[index];
     } else {
-      error('取现有会话数据时未找到会话数据');
+      handle_error('取现有会话数据时未找到会话数据');
       return null;
     }
   }
@@ -133,8 +128,34 @@
     save_all_session_data();
   }
 
+  // 生成客户端配置
+  function new_client_config(
+    yaa_api = 'http://127.0.0.1:12345',
+    yaa_api_key = '',
+    yaa_character = '你是一个叫 yaa 的智能体。'
+  ) {
+    return {
+      'yaa_api': yaa_api,
+      'yaa_api_key': yaa_api_key,
+      'yaa_character': yaa_character
+    }
+  }
+
+  // 生成页面布局配置
+  function new_view_config(
+    sett_panel_closed = true,
+    ctrl_panel_closed = false,
+    not_max = false
+  ) {
+    return {
+      'sett_panel_closed': sett_panel_closed,
+      'ctrl_panel_closed': ctrl_panel_closed,
+      'not_max': not_max
+    }
+  }
+
   // 生成配置数据
-  function new_config_data(api_url = 'https://api.deepseek.com', api_key, model_name = 'deepseek-chat') {
+  function new_session_config(api_url = 'https://api.deepseek.com', api_key, model_name = 'deepseek-chat') {
     return {
       'llm_api': {
         'provider': {
@@ -150,7 +171,7 @@
   function push_message(role, content, session_id = null) {
     if (session_id == null) {
       if (current_session_id == null) {
-        error('添加新消息到会话时未指定会话数据 ID');
+        handle_error('添加新消息到会话时未指定会话数据 ID');
         return;
       }
       session_id = current_session_id;
@@ -163,7 +184,7 @@
       });
       update_session_data(session_data)
     } else {
-      error('添加新消息到会话时未找到会话数据 ID');
+      handle_error('添加新消息到会话时未找到会话数据 ID');
       return;
     }
   }
@@ -171,14 +192,14 @@
   // 删除会话
   function delete_session(session_id) {
     if (session_id == null) {
-      error('删除会话时未指定会话数据 ID');
+      handle_error('删除会话时未指定会话数据 ID');
       return;
     }
     if (get_session_data(session_id)) {
       all_session_data = all_session_data.filter(session => session.id !== session_id);
       save_all_session_data();
     } else {
-      error('删除会话时会话数据 ID 不存在');
+      handle_error('删除会话时会话数据 ID 不存在');
     }
     if (current_session_id == session_id) {
       view_delete_messages();
@@ -207,20 +228,27 @@
   function view_display_config() {
     const configContainer = document.querySelector('.yaa-container .sett-panel .sett-block');
 
-    configContainer.querySelector('.yaa-api').value = yaa_api;
-    configContainer.querySelector('.yaa-api-key').value = yaa_api_key;
-    configContainer.querySelector('.yaa-character').value = yaa_character;
-    if (current_config) {
-      configContainer.querySelector('.api-url').value = current_config.llm_api.provider.api_url;
-      configContainer.querySelector('.api-key').value = current_config.llm_api.provider.api_key;
-      configContainer.querySelector('.model-name').value = current_config.llm_api.provider.model_name;
+    configContainer.querySelector('.yaa-api').value = client_config.yaa_api;
+    configContainer.querySelector('.yaa-api-key').value = client_config.yaa_api_key;
+    configContainer.querySelector('.yaa-character').value = client_config.yaa_character;
+    if (session_config) {
+      configContainer.querySelector('.api-url').value = session_config.llm_api.provider.api_url;
+      configContainer.querySelector('.api-key').value = session_config.llm_api.provider.api_key;
+      configContainer.querySelector('.model-name').value = session_config.llm_api.provider.model_name;
+    }
+  }
+
+  function view_display_session_list() {
+    for (let i = 0; i < all_session_data.length; i++) {
+      const session = all_session_data[i];
+      view_push_session(session);
     }
   }
 
   // 显示指定会话
   function view_switch_session(session_id) {
     if (!session_id) {
-      error('显示指定会话时未指定会话数据 ID');
+      handle_error('显示指定会话时未指定会话数据 ID');
       return;
     }
     if (get_session_data(session_id)) {
@@ -240,7 +268,7 @@
       }
       current_session_id = session_id;
     } else {
-      error('显示指定会话时会话数据 ID 不存在');
+      handle_error('显示指定会话时会话数据 ID 不存在');
       return;
     }
   }
@@ -259,6 +287,19 @@
       <button data-id="${session_id}" class="delete-session-btn delete icon"></button>
     `;
     sessionList.appendChild(sessionDiv);
+  }
+
+  // 应用页面布局
+  function view_display_view_config() {
+    if (view_config.not_max) {
+      toggle_maximize();
+    }
+    if (!view_config.sett_panel_closed) {
+      toggle_sett_panel();
+    }
+    if (view_config.ctrl_panel_closed) {
+      toggle_ctrl_panel();
+    }
   }
 
   // 显示新消息，如果离底部很近（10px），触发回到底部
@@ -296,12 +337,15 @@
       settingsPanel.classList.toggle('closed');
     }
     controlPanel.classList.toggle('closed');
+    view_config.ctrl_panel_closed = controlPanel.classList.contains('closed');
   }
 
   // 切换设置面板显示状态
   function toggle_sett_panel() {
     const settingsPanel = document.querySelector('.yaa-container .sett-panel');
+    view_display_config();
     settingsPanel.classList.toggle('closed');
+    view_config.ctrl_panel_closed = settingsPanel.classList.contains('closed');
   }
 
   // 回到最底
@@ -329,13 +373,11 @@
     const model = settingsPanel.querySelector('.model-name').value;
 
     // 应用新配置
-    current_config = new_config_data(llmApiUrl, llmApiKey, model);
-    yaa_api = yaaApiInput;
-    yaa_api_key = yaaApiKeyInput;
-    yaa_character = yaaCharacterInput;
+    session_config = new_session_config(llmApiUrl, llmApiKey, model);
+    client_config = new_client_config(yaaApiInput, yaaApiKeyInput, yaaCharacterInput);
 
     // 保存配置到本地存储
-    save_config_data();
+    save_configs();
   }
 
   // 重载
@@ -369,13 +411,13 @@
       // 如果当前页面显示会话（是从会话列表发送消息的）
       session_id = current_session_id;
       if (is_dealing_with(session_id)) {
-        error('当前会话正在处理中，请稍后再试');
+        handle_error('当前会话正在处理中，请稍后再试');
         return;
       }
       if (get_session_data(session_id)) {
         session_data = get_session_data(session_id);
       } else {
-        error('当前会话数据不存在');
+        handle_error('当前会话数据不存在');
         return;
       }
       // 标记当前会话正在处理中
@@ -391,11 +433,13 @@
     input.value = '';
     try {
       // 发送请求
-      const response = await fetch(yaa_api, {
+      var post_data = session_data;
+      post_data.config = session_config;
+      const response = await fetch(client_config.yaa_api, {
         method: 'POST',
-        headers: { 'Authorization': 'YAA-API-KEY ' + yaa_api_key, 'Content-Type': 'application/json' },
-        body: JSON.stringify(session_data)
-      });
+        headers: { 'Authorization': 'YAA-API-KEY ' + client_config.yaa_api_key, 'Content-Type': 'application/json' },
+        body: JSON.stringify(post_data)
+      }); post_data = null;
       const data = await response.json();
       console.log('请求回应：', data.messages);
       // 更新会话数据的状态
@@ -416,7 +460,7 @@
         }
       }
     } catch (e) {
-      error('解析消息时出错：' + e);
+      handle_error('解析消息时出错：' + e);
     } finally {
       // 标记停止处理会话
       stop_dealing_with(session_id);
@@ -424,16 +468,18 @@
   }
 
   // 错误信息处理
-  function error(e) {
+  function handle_error(e) {
     console.error('客户端错误：' + e);
     view_push_message('system', '客户端错误：' + e);
   }
 
   // 初始化
   function initialize() {
-    load_config_data();
+    load_configs();
+    view_display_view_config();
     load_all_session_data();
-    view_display_config()
+    view_display_config();
+    view_display_session_list();
   }
 
   // 点击事件委托
@@ -465,6 +511,7 @@
       view_switch_session(session_id);
     } else if (event.target.closest('.yaa-container .chat-panel .header .maximize')) {
       toggle_maximize();
+      view_config.not_max = yaaContainer.classList.contains('not-max');
     } else if (event.target.closest('.yaa-container .chat-panel .header .menu, .yaa-container .yaa')) {
       toggle_ctrl_panel();
     } else if (event.target.closest('.yaa-container .chat-panel .header .reload')) {
@@ -481,6 +528,16 @@
       send_message_and_deal_with_api();
     } else if (event.target.closest('.yaa-container .sett-panel .header .save-settings')) {
       toggle_save_settings();
+    } else if (event.target.closest('.yaa-container .sett-panel .header .download-settings')) {
+      // TODO
+    } else if (event.target.closest('.yaa-container .sett-panel .header .upload-settings')) {
+      // TODO
+    } else if (event.target.closest('.yaa-container .sett-panel .sett-block .btn-clear-data')) {
+      if (confirm('确认要清空所有数据？')) {
+        reset_all_data();
+        view_new_session();
+        view_display_session_list();
+      }
     }
   });
   // 网页加载完毕后触发初始化

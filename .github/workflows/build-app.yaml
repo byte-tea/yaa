@@ -20,19 +20,20 @@ jobs:
   get-version:
     name: 获取版本号
     runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.get-yaa-version.outputs.version }}
     steps:
 
       - name: 检出仓库
         uses: actions/checkout@v4
 
       - name: 获取 yaa 的版本号
-        id: get-version
+        id: get-yaa-version
         run: |
           YAA_VERSION=$(grep '^version' ./Cargo.toml | awk -F= '{print $2}' | tr -d '" ')
-          echo "::set-output name=version::$YAA_VERSION"
+          echo "$YAA_VERSION"
 
   build-app:
-    needs: get-version
     name: 编译（${{ matrix.os }}）
     runs-on: ${{ matrix.os }}
     env:
@@ -40,6 +41,7 @@ jobs:
       NAME: 'yaa'
       ICON: 'assets/yaa_512.png'
       INSTALLER_LANGUAGE: zh-CN
+      VERSION: ${{ needs.get-version.outputs.VERSION }}
       TARGETS: 'appimage'
     strategy:
       matrix:
@@ -123,10 +125,10 @@ jobs:
           mkdir -p target/client
           cd target/client
           pake ../../${{ env.HTML_PATH }} \
-            -name ${{ env.NAME }} \
+            --name ${{ env.NAME }} \
             --icon ../../${{ env.ICON }} \
             --installer-language ${{ env.INSTALLER_LANGUAGE }} \
-            --app-version ${{ needs.get-version.outputs.version }}
+            --app-version ${{ env.VERSION }} \
             --targets ${{ env.TARGETS }} \
             --use-local-file
           cd ../..

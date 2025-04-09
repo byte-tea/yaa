@@ -349,7 +349,6 @@
     if (input.value.trim() === '') {
       return;
     }
-    view_push_message(role = 'user', marked_content = input.value);
     var session_id = null;
     var session_data = null;
     // 判断是否从新会话发送消息
@@ -384,6 +383,7 @@
         'content': input.value
       });
     }
+    view_push_message(role = 'user', marked_content = input.value);
     update_session_data(session_data);
     input.value = '';
     try {

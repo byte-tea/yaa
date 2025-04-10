@@ -40,12 +40,12 @@ pub async fn process_session(
         return Err(AgentError::InvalidSessionState);
     }
 
-    // 获取最后一条用户消息
-    let _last_user_msg = session_data
-        .messages
-        .iter()
-        .rfind(|m| matches!(m.role, Role::User))
-        .ok_or(AgentError::NoUserMessage)?;
+    // 获取最后一条用户消息（用于检查）
+    // let _last_user_msg = session_data
+    //     .messages
+    //     .iter()
+    //     .rfind(|m| matches!(m.role, Role::User))
+    //     .ok_or(AgentError::NoUserMessage)?;
 
     loop {
         if error_count > 16 {
@@ -58,9 +58,14 @@ pub async fn process_session(
         // 当状态为“已中断”时，很可能是用户授权工具调用，直接跳到工具解析
         if matches!(session_data.status, SessionStatus::InProgress) {
             // 1. 提示词生成
-            if let Some(first_msg) = session_data.messages.first() {
+            if let Some(last_user_msg) = session_data
+                .messages
+                .first()
+                .iter()
+                .rfind(|m| matches!(m.role, Role::User))
+            {
                 let prompt = PromptGenerator::generate_with_current_time(
-                    &first_msg.content,
+                    &last_user_msg.content,
                     &session_data.character,
                     &get_tools_info(tool_registry)[..],
                     &session_data
@@ -70,10 +75,15 @@ pub async fn process_session(
                         .as_deref()
                         .unwrap_or("zh-CN"),
                 );
-                // 将提示词插入到第一个消息之后
+                // 将提示词插入到第一个用户消息之后
+                let last_user_idx = session_data
+                    .messages
+                    .iter()
+                    .rposition(|m| matches!(m.role, Role::User))
+                    .unwrap_or(0);
                 if session_data.messages.len() > 1 {
                     session_data.messages.insert(
-                        1,
+                        last_user_idx + 1,
                         Message {
                             role: Role::System,
                             content: prompt,
@@ -260,7 +270,7 @@ fn get_tools_info(tool_registry: &ToolRegistry) -> Vec<prompt::ToolInfo> {
         .collect()
 }
 
-/// 获取响应消息（从第三条消息开始，最后一条用户消息之后的所有消息）
+/// 获取响应消息（最后一条用户消息之后的不包含系统提示词的所有消息）
 fn get_response_messages(session_data: &SessionData) -> Vec<Message> {
     let last_user_idx = session_data
         .messages
@@ -268,12 +278,8 @@ fn get_response_messages(session_data: &SessionData) -> Vec<Message> {
         .rposition(|m| matches!(m.role, Role::User))
         .unwrap_or(0);
 
-    // 如果最后一条用户消息位置小于等于二，则从第三条消息开始
-    let start_idx = if last_user_idx <= 2 {
-        2
-    } else {
-        last_user_idx + 1
-    };
+        // 跳过用户消息和系统提示词
+    let start_idx = last_user_idx + 2;
 
     // 确保 start_idx 不超过消息总数
     if start_idx >= session_data.messages.len() {

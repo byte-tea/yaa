@@ -3,6 +3,7 @@ mod cli;
 mod core;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
+use agent::tools::question::QuestionTool;
 use agent::tools::finish::FinishTool;
 use agent::tools::rethink::RethinkTool;
 use agent::{api::OpenAIClient, process_session};
@@ -88,6 +89,7 @@ async fn handle_request(
     let mut tool_registry = ToolRegistry::new();
     tool_registry.register(FinishTool);
     tool_registry.register(RethinkTool);
+    tool_registry.register(QuestionTool);
 
     // 创建全新的SessionData实例，确保状态隔离
     let mut merged_data = SessionData::default();
@@ -213,6 +215,7 @@ async fn main() -> std::io::Result<()> {
         let mut tool_registry = ToolRegistry::new();
         tool_registry.register(FinishTool);
         tool_registry.register(RethinkTool);
+        tool_registry.register(QuestionTool);
 
         let client = OpenAIClient::new(
             session_data.config.llm_api.provider.api_key.to_string(),

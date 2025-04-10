@@ -2,6 +2,7 @@
 
 use crate::agent::tools::finish::FinishTool;
 use crate::agent::tools::rethink::RethinkTool;
+use crate::agent::tools::question::QuestionTool;
 use crate::core::tool::ToolRegistry;
 use serde_json;
 
@@ -75,6 +76,7 @@ pub fn create_tool_registry() -> ToolRegistry {
     let mut registry = ToolRegistry::new();
     registry.register(RethinkTool);
     registry.register(FinishTool);
+    registry.register(QuestionTool);
     registry
 }
 

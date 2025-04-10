@@ -8,7 +8,7 @@ pub struct RethinkTool;
 #[async_trait]
 impl Tool for RethinkTool {
     fn name(&self) -> &str {
-        "再度思考"
+        "rethink"
     }
 
     fn description(&self) -> &str {
@@ -17,7 +17,7 @@ impl Tool for RethinkTool {
 
     fn parameters(&self) -> Vec<ToolParam> {
         vec![ToolParam {
-            name: "理由".to_string(),
+            name: "reason".to_string(),
             description: "调用这个工具的理由".to_string(),
             required: true,
             r#type: "string".to_string(),
@@ -53,7 +53,7 @@ impl Tool for RethinkTool {
                 self.name(),
                 input
                     .param_values
-                    .get("理由")
+                    .get("reason")
                     .and_then(|v| v.as_str())
                     .unwrap_or("未提供理由")
             ),

@@ -8,7 +8,7 @@ pub struct FinishTool;
 #[async_trait]
 impl Tool for FinishTool {
     fn name(&self) -> &str {
-        "完成会话"
+        "finish"
     }
 
     fn description(&self) -> &str {
@@ -17,10 +17,10 @@ impl Tool for FinishTool {
 
     fn parameters(&self) -> Vec<ToolParam> {
         vec![ToolParam {
-            name: "理由".to_string(),
+            name: "reason".to_string(),
             description: "任务完成的总结理由".to_string(),
             required: true,
-            r#type: "string".to_string(),
+            r#type: "string".to_string()
         }]
     }
 
@@ -56,7 +56,7 @@ impl Tool for FinishTool {
                 self.name(),
                 input
                     .param_values
-                    .get("理由")
+                    .get("reason")
                     .and_then(|v| v.as_str())
                     .unwrap_or("未提供理由")
             ),

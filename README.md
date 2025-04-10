@@ -61,3 +61,36 @@ cargo run --release
 ## 项目实现
 
 详见 [yaa 文档](docs/README.md)。
+
+## 许可证
+
+[MIT License](LICENSE)
+
+## 附加许可证
+
+### 客户端依赖
+
+|名称|协议|
+|:-:|:--|
+|tabler-icons|[MIT License](//mit-license.org)|
+|markedjs/marked|[marked License](https://github.com/markedjs/marked/blob/master/LICENSE.md)|
+|mermaidjs/mermaid|[MIT License](https://github.com/mermaid-js/mermaid/blob/develop/LICENSE)|
+
+### 服务端依赖
+
+|名称|协议|
+|:-:|:--|
+|actix-cors|[MIT License](https://github.com/actix/actix-extras/blob/master/LICENSE-MIT)|
+|actix-web|[MIT License](https://github.com/actix/actix-web/blob/master/LICENSE-MIT)|
+|anyhow|[MIT License](https://github.com/dtolnay/anyhow/blob/master/LICENSE-MIT)|
+|async-trait|[MIT License](https://github.com/dtolnay/async-trait/blob/master/LICENSE-MIT)|
+|chrono|[MIT License](https://github.com/chronotope/chrono/blob/main/LICENSE)|
+|clap|[MIT License](https://github.com/clap-rs/clap/blob/master/LICENSE-MIT)|
+|reqwest|[MIT License](https://github.com/seanmonstar/reqwest/blob/master/LICENSE-MIT)|
+|serde|[MIT License](https://github.com/serde-rs/serde/blob/master/LICENSE-MIT)|
+|serde_json|[MIT License](https://github.com/serde-rs/json/blob/master/LICENSE-MIT)|
+|thiserror|[MIT License](https://github.com/dtolnay/thiserror/blob/master/LICENSE-MIT)|
+|tokio|[MIT License](https://github.com/tokio-rs/tokio/blob/master/LICENSE)|
+|uuid|[MIT License](https://github.com/uuid-rs/uuid/blob/master/LICENSE-MIT)|
+|wasi|[Apache-2.0 License](https://github.com/bytecodealliance/wasi-rs/blob/main/LICENSE-Apache-2.0_WITH_LLVM-exception)|
+|wasm-bindgen|[Apache-2.0 License](https://github.com/rustwasm/wasm-bindgen/blob/main/LICENSE-APACHE)|

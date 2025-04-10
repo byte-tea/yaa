@@ -520,7 +520,6 @@
     view_apply_view_config();
     view_display_config();
     initialize_mermaid();
-    console.log(all_session_data.length);
     if (all_session_data.length > 0) {
       to_session(all_session_data[all_session_data.length - 1]);
     } else {

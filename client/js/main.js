@@ -340,7 +340,6 @@
 
   // 显示新消息，如果离底部很近（10px），触发回到底部
   function view_push_message(role, marked_content, model_name = '') {
-    const scrollDiv = document.querySelector('.yaa-container .chat-panel .content');
     const chatContent = document.querySelector('.yaa-container .chat-panel .content .width-768');
     const messageDiv = document.createElement('div');
     messageDiv.className = `object ${role}`;
@@ -356,11 +355,12 @@
 
     initialize_mermaid();
 
-    // TODO 逻辑有点问题（离底部很远还是会触发）
-    const distanceFromBottom = scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight;
-    if (distanceFromBottom <= 10) {
+    // // TODO 逻辑有点问题（离底部很远还是会触发）
+    // const scrollDiv = document.querySelector('.yaa-container .chat-panel .content');
+    // const distanceFromBottom = scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight;
+    // if (distanceFromBottom <= 10) {
       to_bottom();
-    }
+    // }
   }
 
   // 最大化

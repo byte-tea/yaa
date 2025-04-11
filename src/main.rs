@@ -86,10 +86,7 @@ async fn handle_request(
     println!("[DEBUG] 接收到的原始数据：{:?}\n", request_data);
     println!("[DEBUG] 初始SessionData：{:#?}\n", app_data);
 
-    let mut tool_registry = ToolRegistry::new();
-    tool_registry.register(FinishTool);
-    tool_registry.register(RethinkTool);
-    tool_registry.register(QuestionTool);
+    let tool_registry = agent::tool::create_tool_registry();
 
     // 创建全新的SessionData实例，确保状态隔离
     let mut merged_data = SessionData::default();
@@ -212,10 +209,7 @@ async fn main() -> std::io::Result<()> {
         .run()
         .await
     } else {
-        let mut tool_registry = ToolRegistry::new();
-        tool_registry.register(FinishTool);
-        tool_registry.register(RethinkTool);
-        tool_registry.register(QuestionTool);
+        let tool_registry = agent::tool::create_tool_registry();
 
         let client = OpenAIClient::new(
             session_data.config.llm_api.provider.api_key.to_string(),

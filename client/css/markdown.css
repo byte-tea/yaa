@@ -116,3 +116,8 @@
 .yaa-container table thead tr:first-child>* {
   border-top: .1rem solid transparent;
 }
+
+.yaa-container svg[id^="mermaid-"][width][height][viewBox] {
+  width: 100%;
+  height: auto;
+}

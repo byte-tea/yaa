@@ -278,7 +278,7 @@ fn get_response_messages(session_data: &SessionData) -> Vec<Message> {
         .rposition(|m| matches!(m.role, Role::User))
         .unwrap_or(0);
 
-        // 跳过用户消息和系统提示词
+    // 跳过用户消息和系统提示词
     let start_idx = last_user_idx + 2;
 
     // 确保 start_idx 不超过消息总数

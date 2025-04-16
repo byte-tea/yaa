@@ -20,7 +20,7 @@ impl Tool for FinishTool {
             name: "reason".to_string(),
             description: "任务完成的总结理由".to_string(),
             required: true,
-            r#type: "string".to_string()
+            r#type: "string".to_string(),
         }]
     }
 

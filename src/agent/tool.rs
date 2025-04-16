@@ -1,8 +1,8 @@
 //! 工具调用相关功能
 
 use crate::agent::tools::finish::FinishTool;
-use crate::agent::tools::rethink::RethinkTool;
 use crate::agent::tools::question::QuestionTool;
+use crate::agent::tools::rethink::RethinkTool;
 use crate::core::tool::ToolRegistry;
 use serde_json;
 

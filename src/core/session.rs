@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,7 +39,6 @@ pub struct Usage {
     pub total_tokens: u32,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionData {
@@ -66,8 +65,7 @@ pub struct Message {
     pub content: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Role {
     User,
@@ -150,7 +148,10 @@ pub struct ToolApprovalConfig {
 }
 
 impl SessionData {
-    pub fn new(character: impl Into<String>, tool_registry: Option<&crate::core::tool::ToolRegistry>) -> Self {
+    pub fn new(
+        character: impl Into<String>,
+        tool_registry: Option<&crate::core::tool::ToolRegistry>,
+    ) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
             title: None,

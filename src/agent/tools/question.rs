@@ -21,26 +21,26 @@ impl Tool for QuestionTool {
                 name: "question".to_string(),
                 description: "想要询问用户的问题".to_string(),
                 required: true,
-                r#type: "string".to_string()
+                r#type: "string".to_string(),
             },
             ToolParam {
                 name: "guess_one".to_string(),
                 description: "用户可能的回答".to_string(),
                 required: false,
-                r#type: "string".to_string()
+                r#type: "string".to_string(),
             },
             ToolParam {
                 name: "guess_two".to_string(),
                 description: "用户可能的回答".to_string(),
                 required: false,
-                r#type: "string".to_string()
+                r#type: "string".to_string(),
             },
             ToolParam {
                 name: "guess_three".to_string(),
                 description: "用户可能的回答".to_string(),
                 required: false,
-                r#type: "string".to_string()
-            }
+                r#type: "string".to_string(),
+            },
         ]
     }
 
@@ -68,10 +68,7 @@ impl Tool for QuestionTool {
         // 添加工具调用消息到会话
         session.add_message(
             crate::core::session::Role::System,
-            format!(
-                "[{}]执行成功。",
-                self.name()
-            ),
+            format!("[{}]执行成功。", self.name()),
         );
 
         Ok(ToolOutput {

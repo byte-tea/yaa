@@ -17,9 +17,11 @@ pub async fn run_interactive(
     let mut session = session_data.clone();
 
     loop {
+        // 输出提示符
         print!("> ");
         io::stdout().flush()?;
 
+        // 读取用户输入
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
         let input = input.trim();
@@ -28,21 +30,25 @@ pub async fn run_interactive(
             break;
         }
 
+        // 添加用户消息
         session.messages.push(Message {
             role: crate::core::session::Role::User,
             content: input.to_string(),
         });
 
+        // 处理会话
         let response = process_session(session.clone(), tool_registry, client).await?;
 
+        // 输出响应消息
         for msg in &response.messages {
             println!("【{:?}】\n{}", msg.role, msg.content);
             session.add_message(msg.role.clone(), msg.content.clone());
         }
 
+        // 检查会话是否结束
         if matches!(
             response.finish_reason,
-            FinishReason::Completed | FinishReason::Interrupted
+            FinishReason::Completed | FinishReason::Failed
         ) {
             break;
         }

@@ -32,9 +32,9 @@ cd yaa
 Configuration:
 
 ```bash
-# Create client config file (will override default config)
+# Create client config file (will override default config when passed)
 cp configs/Config.example.json Config.json
-# Create server config file (will override default config)
+# Create server config file (will override default config when passed)
 cp configs/ServerConfig.example.json ServerConfig.json
 ```
 
@@ -43,13 +43,13 @@ cp configs/ServerConfig.example.json ServerConfig.json
 Start in server mode:
 
 ```bash
-cargo run --release -- --serve --port 12345
+cargo run --release -- --serve --port 12345 --config Config.json
 ```
 
 Start in interactive CLI mode:
 
 ```bash
-cargo run --release
+cargo run --release -- --config Config.json
 > Please write a bubble sort algorithm in Python.
 * Working on it...
 ```

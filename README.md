@@ -43,13 +43,13 @@ cp configs/ServerConfig.example.json ServerConfig.json
 以服务模式启动：
 
 ```bash
-cargo run --release -- --serve --port 12345
+cargo run --release -- --serve --port 12345 --config Config.json
 ```
 
 以命令行交互模式启动：
 
 ```bash
-cargo run --release
+cargo run --release -- --config Config.json
 > 请用 Python 写一个冒泡排序算法。
 * 好的……
 ```

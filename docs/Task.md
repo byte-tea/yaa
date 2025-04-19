@@ -1,7 +1,11 @@
 # 任务
 
-1. 通读 `src/` 下的所有模块，更新 `docs\README.md` 项目架构。
-2. 更新 `docs\new_tools.md` 新增工具开发指南。
+1. 选择性阅读[项目文档](docs/README.md)、核心逻辑 `src\agent\mod.rs`、示例工具 `src\agent\tools\finish.rs`、API 调用 `src\agent\api.rs`、服务器模块 `src\server\mod.rs`。
+2. 探讨如何实现 sse 即时更新到客户端（每次 session_data 新增消息或状态更新时，回传更改的部分到客户端）（API 的流式传输最好也能实时回传）（用回调函数实现？还是其它方式？）。
+3. 实现核心逻辑的即使更新回传。
+4. 实现命令行模式 `src\cli\mod.rs` 的实时显示。
+5. 实现服务器模块 `src\server\mod.rs` 的 sse 实时回传。
+6. 根据本次任务，更新 `docs/Task.md` 文件。
 
 ## 当前进展
 
@@ -21,6 +25,7 @@
 10. 实现智能体回复数据结构（AgentResponseData 和 StreamResponseData）
 11. 实现智能体核心逻辑模块
 12. 实现命令行参数解析(--serve和--port参数)
+13. 分离服务器模块到 src/server
 
 目录：
 
@@ -40,6 +45,8 @@ src/
 │   ├── session.rs       # 会话数据的结构和智能体响应数据的结构定义
 │   ├── tool.rs          # 定义工具框架基础结构和接口
 │   └── prompt.rs        # 提示词生成器
+├── server/              # 服务器实现
+│   └── mod.rs           # 服务器模块核心逻辑
 └── cli/                 # 命令行模式(部分实现)
     ├── mod.rs           # CLI 入口(待完善)
     └── commands.rs      # 子命令实现(待完善)
@@ -74,5 +81,6 @@ src/
 
 ## 参考资料
 
-[项目文档](docs/README.md)
-[工具调用的实现](docs/FlowAnalyze/FlowAnalyze.md)
+[项目文档](/docs/README.md)
+[工具调用的实现](/docs/FlowAnalyze/FlowAnalyze.md)
+[新增工具开发指南](/docs/new_tools.md)

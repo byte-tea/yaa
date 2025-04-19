@@ -85,7 +85,7 @@ async fn handle_request(
 
     let tool_registry = agent::tool::create_tool_registry();
 
-    // 创建全新的SessionData实例，确保状态隔离
+    // 创建全新的 SessionData 实例，确保状态隔离
     let mut merged_data = SessionData::default();
     merged_data.config = app_data.config.clone(); // 只复制必要的配置部分
 

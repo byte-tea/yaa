@@ -1,13 +1,10 @@
 # 任务
 
-1. 了解 `src\` 下所有有必要模块，阅读 `configs/Config.example.json` 和 `Config.json`。
-2. 每一步都要用 cargo check 验证无误。
-3. 实现参数：`--config （文件名）` 如 `--config ./configs/Config.example.json` 或 `--config ./Config.json` 用于指定默认配置的内容。
-4. 根据本任务更新 `Task.md`。
+1. 通读 `src/` 下的所有模块，更新 `docs\README.md`。
 
 ## 当前进展
 
-这是 yaa 智能体后端。它原本是一个 Python 智能体项目，现在需要用 rust 重写它，要支持 wasi（服务器模式、命令行交互模式）和 wasm（能被 HTML 调用 session 模块生成、管理会话数据，能被 HTML 调用 agent 模块进行核心逻辑后取得结果）。
+这是 yaa 智能体后端。未来计划要支持 wasi（服务器模式、命令行交互模式）和 wasm（能被 HTML 调用 session 模块生成、管理会话数据，能被 HTML 调用 agent 模块进行核心逻辑后取得结果）。
 
 已完成：
 
@@ -35,6 +32,7 @@ src/
 │   ├── tool.rs          # 实现工具调用的具体解析逻辑
 │   └── tools/           # 工具实现
 │       ├── rethink.rs   # 再度思考工具实现
+│       ├── question.rs  # 提问工具实现
 │       └── finish.rs    # 完成会话工具实现
 ├── core/                # 核心
 │   ├── mod.rs           # 核心初始化

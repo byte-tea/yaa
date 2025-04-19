@@ -1,6 +1,7 @@
 # 任务
 
-1. 通读 `src/` 下的所有模块，更新 `docs\README.md`。
+1. 通读 `src/` 下的所有模块，更新 `docs\README.md` 项目架构。
+2. 更新 `docs\new_tools.md` 新增工具开发指南。
 
 ## 当前进展
 

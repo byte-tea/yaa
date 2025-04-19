@@ -14,6 +14,7 @@ yaa 智能体采用 Rust 实现，支持 WASM（WebAssembly）和 WASI 运行时
 6. 工具实现：
    - 再度思考工具 (RethinkTool)
    - 完成会话工具 (FinishTool)
+   - 提问工具 (QuestionTool) - 当需要更多信息时向用户提问
 
 ### 代码结构
 
@@ -116,6 +117,14 @@ sequenceDiagram
 - 功能：将当前的对话历史再次输入到模型中，让模型继续思考更多的可能性
 - 参数：
   - 理由 (string, required): 调用这个工具的理由
+- 默认配置：自动授权 (auto_approve: true)
+
+#### 提问工具 (QuestionTool)
+
+- 功能：当无法通过其它方法获取更多信息时向用户提问
+- 参数：
+  - question (string, required): 想要询问用户的问题
+  - guess_one/guess_two/guess_three (string, optional): 用户可能的回答建议
 - 默认配置：自动授权 (auto_approve: true)
 
 #### 完成会话工具 (FinishTool)

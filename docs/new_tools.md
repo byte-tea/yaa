@@ -31,9 +31,12 @@
    - 工具名称：简明中文描述，如 "完成会话"
 
 2. 参数规范：
-   - 使用 JSON Schema 定义参数结构
-   - 必须包含 `required` 字段
-   - 每个参数应有清晰的描述
+   - 使用 `Vec<ToolParam>` 定义参数结构
+   - 每个 ToolParam 必须包含：
+     - name: 参数名
+     - description: 参数描述
+     - required: 是否必需
+     - type: 参数类型
 
 3. 执行逻辑：
    - 必须检查 `session.config.tool.{tool_id}.auto_approve`
@@ -45,7 +48,7 @@
 ```rust
 use serde_json::json;
 use async_trait::async_trait;
-use crate::core::tool::{Tool, ToolError, ToolInput, ToolOutput};
+use crate::core::tool::{Tool, ToolError, ToolInput, ToolOutput, ToolParam};
 use crate::core::session::SessionData;
 
 pub struct MyTool;
@@ -60,26 +63,31 @@ impl Tool for MyTool {
         "工具的功能描述"
     }
 
-    fn parameters(&self) -> serde_json::Value {
-        json!({
-            "type": "object",
-            "properties": {
-                "param1": {
-                    "type": "string",
-                    "description": "参数1描述"
-                }
-            },
-            "required": ["param1"]
-        })
+    fn parameters(&self) -> Vec<ToolParam> {
+        vec![
+            ToolParam {
+                name: "param1".to_string(),
+                description: "参数1描述".to_string(),
+                required: true,
+                r#type: "string".to_string(),
+            }
+        ]
+    }
+
+    fn default_config(&self) -> crate::core::session::ToolApprovalConfig {
+        crate::core::session::ToolApprovalConfig { auto_approve: true }
     }
 
     async fn execute(
-        &self, 
+        &self,
         input: ToolInput,
         session: &mut SessionData
     ) -> Result<ToolOutput, ToolError> {
         // 检查自动授权
-        if !session.config.tool.base_tool.auto_approve {
+        if !session.config.tool.tools.get(self.name())
+            .map(|config| config.auto_approve)
+            .unwrap_or(true)
+        {
             return Err(ToolError::NotAuthorized);
         }
 
@@ -87,7 +95,7 @@ impl Tool for MyTool {
 
         // 添加工具消息
         session.add_message(
-            crate::core::session::Role::Tool,
+            crate::core::session::Role::System,
             format!("[{}]执行成功", self.name())
         );
 

@@ -28,12 +28,12 @@ jobs:
     - name: 检出仓库
       uses: actions/checkout@v4
     
-    - name: 部署 markdown.html
-      uses: PJ-568/MARKDOWN.HTML@v1.10.1
-    
     - name: 删除不需要部署的文件
       run: |
         rm -rf src/
+    
+    - name: 部署 markdown.html
+      uses: PJ-568/MARKDOWN.HTML@v1.17.8
 
     - name: 配置 Pages
       uses: actions/configure-pages@v4

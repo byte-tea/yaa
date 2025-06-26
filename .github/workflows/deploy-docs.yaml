@@ -33,7 +33,7 @@ jobs:
         rm -rf src/
     
     - name: 部署 markdown.html
-      uses: PJ-568/MARKDOWN.HTML@v1.17.8
+      uses: PJ-568/MARKDOWN.HTML@v1.18.2
 
     - name: 配置 Pages
       uses: actions/configure-pages@v4

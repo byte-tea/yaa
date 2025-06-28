@@ -1,7 +1,10 @@
 [package]
 name = "yaa"
 version = "2.17.0"
+authors = ["PJ568 <pj568@pj568.eu.org>"]
 edition = "2024"
+description = "`yaa` means Yet Another Agent, which can analyze and understand natural language instructions and automatically create, plan, execute, and check tasks."
+license = "MIT"
 
 [dependencies]
 actix-cors = "0.7.1"
